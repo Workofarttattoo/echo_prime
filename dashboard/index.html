@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECH0-PRIME | Cognitive Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="panel metrics">
+        <h1>ECH0-PRIME</h1>
+        <div class="resonance-ring"></div>
+        
+        <div class="metric-card">
+            <label>THALAMOCORTICAL RESONANCE</label>
+            <div class="value">40Hz</div>
+        </div>
+
+        <div class="metric-card">
+            <label>VARIATIONAL FREE ENERGY</label>
+            <div id="fe-value" class="value">0.0000</div>
+        </div>
+
+        <div class="metric-card">
+            <label>COHERENCE LEVEL</label>
+            <div id="coherence-value" class="value">1.00</div>
+        </div>
+
+        <div class="metric-card">
+            <label>META-COGNITIVE STATE</label>
+            <div id="surprise-status" class="value">IDLE</div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <h2>PREFRONTAL THOUGHT STREAM</h2>
+        <div id="thought-stream">
+            Waiting for sensory input...
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+[project]
+name = "echo-prime"
+version = "0.1.0"
+description = "ECH0-PRIME: Cognitive-Synthetic Architecture for AGI"
+authors = [
+    {name = "Joshua Hendricks Cole", email = "7252242617@vtext.com"}
+]
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Proprietary - Copyright (c) 2025 Joshua Hendricks Cole (DBA: Corporation of Light). All Rights Reserved. PATENT PENDING."}
+
+dependencies = [
+    "numpy>=1.24.0",
+    "Pillow>=10.0.0",
+    "requests>=2.31.0",
+    "SpeechRecognition>=3.10.0",
+    "PyAudio>=0.2.13",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.5.0",
+]
+
+api = [
+    "fastapi>=0.104.0",
+    "uvicorn>=0.24.0",
+    "pydantic>=2.5.0",
+    "python-dotenv>=1.0.0",
+]
+
+cloud = [
+    "anthropic>=0.7.0",
+    "openai>=1.3.0",
+]
+
+database = [
+    "psycopg2-binary>=2.9.9",
+    "redis>=5.0.0",
+]
+
+[project.scripts]
+echo-prime = "main_orchestrator:main"
+
+[build-system]
+requires = ["setuptools>=68.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["core", "memory", "learning", "reasoning", "safety", "training"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+[tool.black]
+line-length = 100
+target-version = ['py310']
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false

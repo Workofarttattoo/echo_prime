@@ -1,0 +1,4 @@
+{
+  "port": 62866,
+  "ws_url": "ws://localhost:62866/ws"
+}

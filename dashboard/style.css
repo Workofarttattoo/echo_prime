@@ -1,0 +1,94 @@
+:root {
+    --bg: #050505;
+    --acc-primary: #00f2ff;
+    --acc-secondary: #7000ff;
+    --text: #e0e0e0;
+    --panel-vibrant: rgba(255, 255, 255, 0.05);
+}
+
+body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 20px;
+    height: 100vh;
+    box-sizing: border-box;
+}
+
+h1, h2 {
+    color: var(--acc-primary);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 300;
+}
+
+.panel {
+    background: var(--panel-vibrant);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+    overflow: hidden;
+    position: relative;
+}
+
+.glow {
+    box-shadow: 0 0 20px var(--acc-primary);
+}
+
+.metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.metric-card {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid var(--acc-secondary);
+}
+
+.value {
+    font-size: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--acc-primary);
+}
+
+#thought-stream {
+    height: 100%;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    overflow-y: auto;
+    color: #00ff41; /* Matrix green for thoughts */
+}
+
+.resonance-ring {
+    width: 100px;
+    height: 100px;
+    border: 2px solid var(--acc-primary);
+    border-radius: 50%;
+    animation: pulse 1s infinite;
+    margin: 20px auto;
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.95); opacity: 0.5; }
+    50% { transform: scale(1.05); opacity: 1; }
+    100% { transform: scale(0.95); opacity: 0.5; }
+}
+
+.surprise-alert {
+    animation: flash 0.5s infinite;
+    color: #ff0055;
+}
+
+@keyframes flash {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}

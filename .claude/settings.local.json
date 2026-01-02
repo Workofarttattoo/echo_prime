@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(./venv/bin/pip:*)",
+      "Bash(rm:*)",
+      "Bash(python3:*)",
+      "Bash(./venv/bin/python:*)",
+      "Bash(curl:*)",
+      "Bash(chmod:*)",
+      "Bash(timeout 5 ./venv/bin/python:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

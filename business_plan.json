@@ -1,0 +1,31 @@
+{
+  "executive_summary": {
+    "company_overview": "ECH0-PRIME: Revolutionary AI company leading the next era",
+    "mission": "Accelerate human scientific discovery through AI supremacy",
+    "market_opportunity": "$1.8T AI market with ECH0 capturing leadership position"
+  },
+  "financial_projections": {
+    "year_1": {
+      "revenue": 2000000,
+      "net_loss": -1000000
+    },
+    "year_2": {
+      "revenue": 15000000,
+      "net_income": 3000000
+    },
+    "year_3": {
+      "revenue": 75000000,
+      "net_income": 30000000
+    },
+    "year_5": {
+      "revenue": 300000000,
+      "net_income": 150000000
+    }
+  },
+  "funding_requirements": {
+    "seed_round": 1000000,
+    "series_a": 10000000,
+    "series_b": 50000000,
+    "total_funding": 61000000
+  }
+}
