@@ -22,18 +22,42 @@ class PineconeEngine:
         # Using a small, fast model for the RAG loop
         try:
             hf_token = os.getenv("HF_TOKEN")
-            model_id = 'sentence-transformers/all-MiniLM-L6-v2'
+            candidates = []
+            local_path = os.getenv("ECH0_EMBED_PATH")
+            if local_path:
+                candidates.append(os.path.expanduser(local_path))
+            # Named model fallback
+            candidates.append(os.getenv("ECH0_EMBED_MODEL", "ECH0"))
+
+            model_id = None
+            for cand in candidates:
+                if cand and os.path.exists(cand):
+                    model_id = cand
+                    break
+            if model_id is None:
+                model_id = candidates[-1]
             try:
                 # Try with token first (if provided), otherwise explicitly disable to avoid expired system tokens
-                self.model = SentenceTransformer(model_id, use_auth_token=hf_token if hf_token else False)
+                # Using 'token' instead of deprecated 'use_auth_token'
+                self.model = SentenceTransformer(model_id, token=hf_token if hf_token else False)
             except Exception as e:
                 # Fallback: explicitly disable token if it's expired or invalid
                 print(f"PINECONE: HF_TOKEN failed ({e}), attempting load with token disabled...")
-                self.model = SentenceTransformer(model_id, use_auth_token=False)
-            self.model_available = True
+                self.model = SentenceTransformer(model_id, token=False)
         except Exception as e:
-            print(f"PINECONE ERROR: Could not load embedding model: {e}")
-            self.model_available = False
+            try:
+                # Fallback to default model if custom/local fails
+                fallback_id = 'sentence-transformers/all-MiniLM-L6-v2'
+                print(f"PINECONE: Falling back to {fallback_id} due to error: {e}")
+                self.model = SentenceTransformer(fallback_id, token=False)
+                model_id = fallback_id
+            except Exception as e2:
+                print(f"PINECONE ERROR: Could not load embedding model: {e2}")
+                self.model_available = False
+            else:
+                self.model_available = True
+        else:
+            self.model_available = True
             
         if self.api_key and self.model_available:
             try:

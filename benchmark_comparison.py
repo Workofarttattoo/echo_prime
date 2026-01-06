@@ -15,6 +15,7 @@ def load_latest_results() -> Dict[str, Any]:
     """Load the most recent benchmark results"""
     results_dir = Path(".")
     result_files = list(results_dir.glob("benchmark_results_*.json"))
+    result_files.extend(list(results_dir.glob("full_benchmark_results_*.json")))
 
     if not result_files:
         return None
@@ -25,6 +26,23 @@ def load_latest_results() -> Dict[str, Any]:
 
     with open(latest_file, 'r') as f:
         results = json.load(f)
+    
+    # Adapt 'full_benchmark_results' format if needed
+    if 'individual_results' in results and 'results' not in results:
+        results['results'] = {}
+        for name, data in results['individual_results'].items():
+            results['results'][name] = {
+                "score": data.get('accuracy', 0),
+                "total_questions": data.get('total_samples', 0),
+                "correct_answers": data.get('ech0_correct', 0),
+                "execution_time": 0 # Not tracked in full_benchmark format
+            }
+        report = results.get('comprehensive_report', {})
+        perf = report.get('overall_performance', {})
+        results['overall_score'] = perf.get('overall_accuracy', 0)
+        results['total_questions'] = perf.get('total_samples', 0)
+        results['total_correct'] = perf.get('total_correct', 0)
+        results['model_used'] = results.get('benchmark_run', {}).get('system', 'ECH0-PRIME')
 
     # Add comparison data if not present
     if 'comparison' not in results:
@@ -90,11 +108,15 @@ def generate_comparison_report(results: Dict[str, Any]) -> str:
 
     # Overall summary
     report.append("## 📊 Overall Performance Summary")
-    report.append(f"- **Overall Score**: {results['overall_score']:.1f}%")
-    report.append(f"- **Total Questions**: {results['total_questions']}")
-    report.append(f"- **Correct Answers**: {results['total_correct']}")
-    report.append(f"- **Model Used**: {results['model_used']}")
-    report.append(f"- **Benchmarks Completed**: {results['benchmarks_run']}")
+    report.append(f"- **Overall Score**: {results.get('overall_score', 0):.1f}%")
+    report.append(f"- **Total Questions**: {results.get('total_questions', 0)}")
+    report.append(f"- **Correct Answers**: {results.get('total_correct', 0)}")
+    report.append(f"- **Model Used**: {results.get('model_used', 'Unknown')}")
+    
+    benchmarks_run = results.get('benchmarks_run')
+    if benchmarks_run is None:
+        benchmarks_run = len(results.get('results', {}))
+    report.append(f"- **Benchmarks Completed**: {benchmarks_run}")
     report.append("")
 
     # Individual benchmark results
@@ -270,11 +292,15 @@ def main():
     # Print summary
     print("\n🎯 SUMMARY")
     print("=" * 50)
-    print(f"Overall Score: {results['overall_score']:.1f}%")
-    print(f"Questions Answered: {results['total_questions']}")
-    print(f"Correct Answers: {results['total_correct']}")
-    print(f"Model: {results['model_used']}")
-    print(f"Benchmarks: {results['benchmarks_run']}")
+    print(f"Overall Score: {results.get('overall_score', 0):.1f}%")
+    print(f"Questions Answered: {results.get('total_questions', 0)}")
+    print(f"Correct Answers: {results.get('total_correct', 0)}")
+    print(f"Model: {results.get('model_used', 'Unknown')}")
+    
+    benchmarks_run = results.get('benchmarks_run')
+    if benchmarks_run is None:
+        benchmarks_run = len(results.get('results', {}))
+    print(f"Benchmarks: {benchmarks_run}")
 
     if 'comparison' in results:
         print("\n🏆 Performance vs AI Baselines:")

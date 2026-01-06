@@ -8,7 +8,7 @@ import random
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
 
-from main_orchestrator import EchoPrimeAGI
+from simple_orchestrator import SimpleEchoPrimeAGI
 from training.intelligent_grader import IntelligentGrader
 try:
     from benchmark_tracker import update_benchmark_stats
@@ -26,8 +26,7 @@ def grid_to_str(grid):
 
 def run_arc_benchmark(limit=10):
     print(f"Initializing ECH0-PRIME for ARC-AGI Benchmark (limit={limit})...")
-    agi = EchoPrimeAGI()
-    agi.voice_enabled = False
+    agi = SimpleEchoPrimeAGI(lightweight=True)
     grader = IntelligentGrader()
     
     files = [f for f in os.listdir(DATA_DIR) if f.endswith(".json")]

@@ -29,14 +29,16 @@ class DatasetDownloader:
                 }
             },
             'arc_easy': {
-                'type': 'zip',
-                'url': 'https://ai2-public-datasets.s3.amazonaws.com/arc/ARC-Easy.zip',
-                'extract_to': 'ARC-Easy'
+                'type': 'huggingface',
+                'dataset': 'ai2_arc',
+                'config': 'ARC-Easy',
+                'split': 'test'
             },
             'arc_challenge': {
-                'type': 'zip',
-                'url': 'https://ai2-public-datasets.s3.amazonaws.com/arc/ARC-Challenge.zip',
-                'extract_to': 'ARC-Challenge'
+                'type': 'huggingface',
+                'dataset': 'ai2_arc',
+                'config': 'ARC-Challenge',
+                'split': 'test'
             },
             'math': {
                 'type': 'tar.gz',
@@ -44,9 +46,33 @@ class DatasetDownloader:
                 'extract_to': 'MATH'
             },
             'mmlu': {
-                'type': 'tar.gz',
-                'url': 'https://people.eecs.berkeley.edu/~hendrycks/MMLU.tar.gz',
-                'extract_to': 'MMLU'
+                'type': 'huggingface',
+                'dataset': 'cais/mmlu',
+                'config': 'all',
+                'split': 'test'
+            },
+            'gooaq': {
+                'type': 'huggingface',
+                'dataset': 'sentence-transformers/gooaq',
+                'split': 'train'
+            },
+            'hellaswag': {
+                'type': 'huggingface',
+                'dataset': 'Rowan/hellaswag',
+                'config': 'default',
+                'split': 'validation'
+            },
+            'truthful_qa': {
+                'type': 'huggingface',
+                'dataset': 'truthful_qa',
+                'config': 'multiple_choice',
+                'split': 'validation'
+            },
+            'winogrande': {
+                'type': 'huggingface',
+                'dataset': 'winogrande',
+                'config': 'winogrande_xl',
+                'split': 'validation'
             }
         }
 
@@ -84,6 +110,39 @@ class DatasetDownloader:
             self._download_zip_file(dataset, config)
         elif config['type'] == 'tar.gz':
             self._download_tar_file(dataset, config)
+        elif config['type'] == 'huggingface':
+            self._download_huggingface_dataset(dataset, config)
+
+    def _download_huggingface_dataset(self, dataset: str, config: dict) -> None:
+        """Download dataset from HuggingFace and save to JSON"""
+        try:
+            from datasets import load_dataset
+            print(f"  Downloading from HuggingFace: {config['dataset']}...")
+            
+            if 'config' in config:
+                print(f"  Using config: {config['config']}")
+                ds = load_dataset(config['dataset'], config['config'], split=config['split'], trust_remote_code=True)
+            else:
+                ds = load_dataset(config['dataset'], split=config['split'], trust_remote_code=True)
+            
+            output_file = self.datasets_dir / f"{dataset}_{config['split']}.json"
+            print(f"  Saving to {output_file}...")
+            
+            # Save first 10k samples as a representative sample
+            samples = []
+            for i, example in enumerate(ds):
+                if i >= 10000: break
+                samples.append(example)
+                
+            with open(output_file, 'w') as f:
+                json.dump(samples, f, indent=2)
+                
+            print(f"  Successfully saved {len(samples)} samples")
+            
+        except ImportError:
+            print("  ❌ Error: 'datasets' library not installed. Run 'pip install datasets'")
+        except Exception as e:
+            print(f"  ❌ Error downloading HuggingFace dataset: {e}")
 
     def _download_jsonl_files(self, dataset: str, config: dict) -> None:
         """Download JSONL files and convert to JSON"""

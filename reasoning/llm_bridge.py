@@ -36,13 +36,9 @@ class OllamaBridge:
             payload["images"] = encoded_images
 
         max_retries = 3
-        timeout_sec = 300
-        if os.environ.get("PYTEST_CURRENT_TEST") or os.environ.get("ECH0_LIGHTWEIGHT") == "1":
-            max_retries = 1
-            timeout_sec = 5
         for attempt in range(max_retries):
             try:
-                response = requests.post(self.api_url, json=payload, timeout=timeout_sec) # Balanced timeout
+                response = requests.post(self.api_url, json=payload, timeout=600) # Extended timeout for complex tasks
                 response.raise_for_status()
                 data = response.json()
                 return data.get("response", "")

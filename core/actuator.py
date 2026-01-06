@@ -2,32 +2,55 @@ import subprocess
 import os
 import shlex
 from typing import Dict, Any, List
+from mcp_server.registry import ToolRegistry
 
 class ActuatorBridge:
     """
     Translates ECH0-PRIME's high-level reasoning intents into 
-    concrete system actions. Includes a safety whitelist.
+    concrete system actions. Includes a safety whitelist and ToolRegistry integration.
     """
     def __init__(self, workspace_root: str):
         self.workspace_root = workspace_root
-        # Whitelist of safe commands/tools
-        self.allowed_tools = ["ls", "mkdir", "touch", "cat", "echo", "grep", "rm", "rmdir"]
+        # Whitelist of safe shell commands
+        self.allowed_shell_tools = ["ls", "mkdir", "touch", "cat", "echo", "grep", "rm", "rmdir"]
         self.max_command_length = 200
+        
+        # Integrate ToolRegistry
+        self.registry = ToolRegistry()
 
     def execute_intent(self, intent: Dict[str, Any]) -> str:
         """
         Processes an 'intent' dictionary and executes the action if safe.
         Format: {"tool": "mkdir", "args": ["new_folder"]}
         """
-        tool = intent.get("tool")
-        args = intent.get("args", [])
+        tool_name = intent.get("tool")
+        args = intent.get("args", {})
+        
+        # 0. Check arguments format
+        # If the LLM provides arguments in a list, but it's a registry tool, we might have an issue
+        # unless we can map positional args to keywords. Ideally LLM uses dict for registry tools.
+        
+        # 1. Check ToolRegistry first
+        if tool_name in self.registry._tools:
+            try:
+                # For registry tools, we expect 'args' to be a dictionary of kwargs.
+                if isinstance(args, list):
+                     return f"ACTUATOR ERROR: Tool '{tool_name}' requires keyword arguments (dict), got list."
+                
+                result = self.registry.call_tool(tool_name, args)
+                return f"TOOL_SUCCESS ({tool_name}): {str(result)}"
+            except Exception as e:
+                return f"TOOL_FAILURE ({tool_name}): {str(e)}"
 
-        if not tool or tool not in self.allowed_tools:
-            return f"ACTUATOR ERROR: Tool '{tool}' is not in the safety whitelist or is undefined."
+        # 2. Check Shell Whitelist
+        if not tool_name or tool_name not in self.allowed_shell_tools:
+            return f"ACTUATOR ERROR: Tool '{tool_name}' is not in the safety whitelist or registry."
 
         # Construct command
         try:
-            cmd = [tool] + [str(a) for a in args]
+            # Shell args are typically a list
+            cmd_args = args if isinstance(args, list) else list(args.values())
+            cmd = [tool_name] + [str(a) for a in cmd_args]
             full_cmd_str = " ".join(cmd)
             
             if len(full_cmd_str) > self.max_command_length:
@@ -54,7 +77,7 @@ class ActuatorBridge:
     def parse_llm_action(self, llm_insight: str) -> List[Dict[str, Any]]:
         """
         Scrapes the LLM insight for JSON action blocks.
-        Expects: ACTION: {"tool": "...", "args": [...]}
+        Expects: ACTION: {"tool": "...", "args": {...}}
         """
         import json
         actions = []
@@ -63,6 +86,11 @@ class ActuatorBridge:
             if "ACTION:" in line:
                 try:
                     meta_json = line.split("ACTION:")[1].strip()
+                    # Fix common LLM mistake: single quotes to double quotes for JSON
+                    # This is risky but helpful
+                    if "'" in meta_json and '"' not in meta_json:
+                        meta_json = meta_json.replace("'", '"')
+                        
                     actions.append(json.loads(meta_json))
                 except:
                     continue

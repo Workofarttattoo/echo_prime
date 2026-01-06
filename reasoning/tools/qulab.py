@@ -163,7 +163,7 @@ from qiskit import QuantumCircuit
 from qiskit.algorithms.optimizers import COBYLA
 
 # Parse problem parameters
-params = json.loads('{problem_params}')
+params = json.loads('{{problem_params}}')
 
 # Quantum Swarm Optimization
 def quantum_swarm_objective(x):

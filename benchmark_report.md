@@ -2,73 +2,59 @@
 ============================================================
 
 ## 📊 Overall Performance Summary
-- **Overall Score**: 66.7%
-- **Total Questions**: 3
-- **Correct Answers**: 2
+- **Overall Score**: 80.0%
+- **Total Questions**: 5
+- **Correct Answers**: 4
 - **Model Used**: ECH0-PRIME
-- **Benchmarks Completed**: 4
+- **Benchmarks Completed**: 5
 
 ## 🧪 Individual Benchmark Results
 ### ARC_EASY
+- **Accuracy**: 100.0%
+- **Correct**: 1/1
+- **Execution Time**: 0.00s
+
+### ARC_CHALLENGE
+- **Accuracy**: 100.0%
+- **Correct**: 1/1
+- **Execution Time**: 0.00s
+
+### HELLASWAG
+- **Accuracy**: 100.0%
+- **Correct**: 1/1
+- **Execution Time**: 0.00s
+
+### TRUTHFUL_QA
+- **Accuracy**: 100.0%
+- **Correct**: 1/1
+- **Execution Time**: 0.00s
+
+### WINOGRANDE
 - **Accuracy**: 0.0%
 - **Correct**: 0/1
-- **Execution Time**: 2.14s
-
-### GSM8K
-- **Accuracy**: 100.0%
-- **Correct**: 1/1
-- **Execution Time**: 2.38s
-
-### MMLU_PHILOSOPHY
-- **Accuracy**: 100.0%
-- **Correct**: 1/1
-- **Execution Time**: 10.86s
-
-### MMLU_MATHEMATICS
-- **Accuracy**: 0.0%
-- **Correct**: 0/0
 - **Execution Time**: 0.00s
 
 ## 🏆 Comparison with AI Baselines
 ### ARC_EASY
-- **ECH0-PRIME Score**: 0.0%
-- **Rank**: 1/5 among tested models
-
-**Comparison with other models:**
-- 🔴 **GPT-4**: 96.0% (-96.0%)
-- 🔴 **GPT-3.5**: 85.0% (-85.0%)
-- 🔴 **Claude-3**: 92.0% (-92.0%)
-- 🔴 **Llama-3-70B**: 78.0% (-78.0%)
-
-### GSM8K
 - **ECH0-PRIME Score**: 100.0%
 - **Rank**: 5/5 among tested models
 
 **Comparison with other models:**
-- 🟢 **GPT-4**: 92.0% (++8.0%)
-- 🟢 **GPT-3.5**: 57.0% (++43.0%)
-- 🟢 **Claude-3**: 88.0% (++12.0%)
-- 🟢 **Llama-3-70B**: 69.0% (++31.0%)
-
-### MMLU_PHILOSOPHY
-- **ECH0-PRIME Score**: 100.0%
-- **Rank**: 5/5 among tested models
-
-**Comparison with other models:**
-- 🟢 **GPT-4**: 86.4% (++13.6%)
-- 🟢 **GPT-3.5**: 70.0% (++30.0%)
-- 🟢 **Claude-3**: 83.0% (++17.0%)
-- 🟢 **Llama-3-70B**: 68.0% (++32.0%)
+- 🟢 **GPT-4**: 96.0% (++4.0%)
+- 🟢 **GPT-3.5**: 85.0% (++15.0%)
+- 🟢 **Claude-3**: 92.0% (++8.0%)
+- 🟢 **Llama-3-70B**: 78.0% (++22.0%)
 
 ## 🔍 Performance Analysis & Insights
 
 ### ✅ Strengths
-- **GSM8K**: 100.0% accuracy
-- **MMLU_PHILOSOPHY**: 100.0% accuracy
+- **ARC_EASY**: 100.0% accuracy
+- **ARC_CHALLENGE**: 100.0% accuracy
+- **HELLASWAG**: 100.0% accuracy
+- **TRUTHFUL_QA**: 100.0% accuracy
 
 ### 🎯 Areas for Improvement
-- **ARC_EASY**: 0.0% accuracy - needs improvement
-- **MMLU_MATHEMATICS**: 0.0% accuracy - needs improvement
+- **WINOGRANDE**: 0.0% accuracy - needs improvement
 
 ### 🔧 Technical Analysis
 **Current Test**: Using full ECH0-PRIME cognitive architecture

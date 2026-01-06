@@ -149,22 +149,38 @@ class NaturalLanguageIntegration:
             self._initialize_nlp_components()
 
     def _initialize_nlp_components(self):
-        """Initialize NLP components"""
+        """Initialize NLP components with granular error handling"""
+        # Initialize language analyzer
         try:
-            # Initialize language analyzer
             self.language_analyzer = NaturalLanguage.NLLanguageRecognizer.alloc().init()
-
-            # Initialize sentiment analyzer
-            self.sentiment_analyzer = NaturalLanguage.NLSentimentAnalyzer.alloc().init()
-
-            # Initialize entity recognizer
-            self.entity_recognizer = NaturalLanguage.NLTagger.alloc().initWithTagSchemes_options_(
-                [NaturalLanguage.NLTagSchemeNameType, NaturalLanguage.NLTagSchemeLemma],
-                0
-            )
-
+            print("✓ NLP: Language analyzer ready")
         except Exception as e:
-            print(f"❌ NLP component initialization failed: {e}")
+            print(f"⚠️ NLP: Language analyzer init failed: {e}")
+
+        # Initialize sentiment tagger (using NLTagSchemeSentimentScore, not NLSentimentAnalyzer)
+        try:
+            if hasattr(NaturalLanguage, 'NLTagSchemeSentimentScore'):
+                self.sentiment_analyzer = NaturalLanguage.NLTagger.alloc().initWithTagSchemes_(
+                    [NaturalLanguage.NLTagSchemeSentimentScore]
+                )
+                print("✓ NLP: Sentiment analyzer ready")
+            else:
+                print("⚠️ NLP: NLTagSchemeSentimentScore not available")
+                self.sentiment_analyzer = None
+        except Exception as e:
+            print(f"⚠️ NLP: Sentiment analyzer init failed: {e}")
+
+        # Initialize entity recognizer with correct PyObjC method
+        try:
+            self.entity_recognizer = NaturalLanguage.NLTagger.alloc().initWithTagSchemes_(
+                [NaturalLanguage.NLTagSchemeNameType, NaturalLanguage.NLTagSchemeLemma]
+            )
+            print("✓ NLP: Entity recognizer ready")
+        except Exception as e:
+            print(f"⚠️ NLP: Entity recognizer init failed: {e}")
+
+        if not any([self.language_analyzer, self.sentiment_analyzer, self.entity_recognizer]):
+            print("❌ All NLP components failed to initialize")
             self.available = False
 
     def analyze_text(self, text: str) -> Dict[str, Any]:
@@ -173,26 +189,43 @@ class NaturalLanguageIntegration:
             return self._simulate_nlp_analysis(text)
 
         try:
-            # Language detection
-            language = self.language_analyzer.dominantLanguageForString_(text)
-            language_confidence = self.language_analyzer.languageHypothesesWithMaximum_hypothesisCount_(
-                text, 1
-            )
+            # Language detection (correct PyObjC method)
+            self.language_analyzer.processString_(text)
+            language = self.language_analyzer.dominantLanguage()
+            
+            # Get language hypotheses for confidence
+            hypotheses = self.language_analyzer.languageHypothesesWithMaximum_(5)
+            language_confidence = float(hypotheses.get(language, 0.0)) if hypotheses and language else 0.95
 
-            # Sentiment analysis
-            sentiment = self.sentiment_analyzer.sentimentForString_(text)
+            # Sentiment analysis using NLTagger with sentiment scheme
+            sentiment = 0.0
+            if self.sentiment_analyzer:
+                try:
+                    self.sentiment_analyzer.setString_(text)
+                    # Get sentiment for the whole string
+                    import Foundation
+                    text_range = Foundation.NSRange(0, len(text))
+                    tag = self.sentiment_analyzer.tagAtIndex_unit_scheme_tokenRange_(
+                        0, NaturalLanguage.NLTokenUnitSentence, 
+                        NaturalLanguage.NLTagSchemeSentimentScore, None
+                    )
+                    if tag:
+                        sentiment = float(tag)
+                except:
+                    sentiment = 0.0
 
             # Entity recognition
             entities = self._extract_entities(text)
 
             return {
                 "language": str(language) if language else "en",
-                "language_confidence": float(language_confidence[language]) if language_confidence else 0.0,
-                "sentiment_score": float(sentiment),
+                "language_confidence": language_confidence,
+                "sentiment_score": sentiment,
                 "sentiment_label": self._sentiment_label(sentiment),
                 "entities": entities,
                 "word_count": len(text.split()),
-                "sentence_count": len([s for s in text.split('.') if s.strip()])
+                "sentence_count": len([s for s in text.split('.') if s.strip()]),
+                "real_apple_nlp": True
             }
         except Exception as e:
             print(f"❌ NLP analysis failed: {e}")
@@ -204,28 +237,31 @@ class NaturalLanguageIntegration:
             return []
 
         try:
-            string = Foundation.NSString.stringWithString_(text)
-            range_obj = Foundation.NSMakeRange(0, string.length())
-
-            self.entity_recognizer.setString_(string)
+            import Foundation
+            
+            self.entity_recognizer.setString_(text)
             entities = []
+            text_range = Foundation.NSRange(0, len(text))
 
-            # Get named entities
-            tags = self.entity_recognizer.tagsInRange_unit_scheme_options_tokenRanges_(
-                range_obj, NaturalLanguage.NLTokenUnitWord,
-                NaturalLanguage.NLTagSchemeNameType, 0, None
+            # Use block-based enumeration (correct PyObjC pattern)
+            def collect_entities(tag, token_range, stop):
+                if tag and str(tag) not in ['OtherWord', 'Whitespace', 'Punctuation', 
+                                             'SentenceTerminator', 'Dash', 'WordJoiner']:
+                    token = text[token_range.location:token_range.location + token_range.length]
+                    entities.append({
+                        "text": token,
+                        "type": str(tag),
+                        "start": token_range.location,
+                        "end": token_range.location + token_range.length
+                    })
+
+            self.entity_recognizer.enumerateTagsInRange_unit_scheme_options_usingBlock_(
+                text_range,
+                NaturalLanguage.NLTokenUnitWord,
+                NaturalLanguage.NLTagSchemeNameType,
+                0,
+                collect_entities
             )
-
-            if tags:
-                for tag_range, tag in tags:
-                    if tag:
-                        entity_text = string.substringWithRange_(tag_range)
-                        entities.append({
-                            "text": str(entity_text),
-                            "type": str(tag),
-                            "start": tag_range.location,
-                            "end": tag_range.location + tag_range.length
-                        })
 
             return entities
         except Exception as e:

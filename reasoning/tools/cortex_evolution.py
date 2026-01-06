@@ -22,10 +22,10 @@ def audit_source(project_root: str = ".") -> str:
 
 @ToolRegistry.register()
 def propose_evolution(file_path: str, improvement_goal: str) -> str:
-    \"\"\"
+    """
     ECH0 analyzes a specific file and proposes a 'Level 10' refinement.
     This generates a diff for the user to approve.
-    \"\"\"
+    """
     if not os.path.exists(file_path):
         return f"ERROR: File {file_path} not found."
     
@@ -42,10 +42,10 @@ PROTECTED_FILES = [
 
 @ToolRegistry.register()
 def apply_evolution(file_path: str, new_code: str) -> str:
-    \"\"\"
+    """
     Applies an approved code refinement to the ECH0-PRIME core.
     The system prompt and identity modules are LOCKED and cannot be edited by this tool.
-    \"\"\"
+    """
     # Normalize path for check
     clean_path = os.path.relpath(file_path, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
     

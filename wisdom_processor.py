@@ -77,9 +77,9 @@ class WisdomProcessor:
                     'source': os.path.basename(file_path),
                     'type': 'structured_data',
                     'concepts': list(concepts.keys()),
-                    'processed_at': time.time()
+                    'timestamp': time.time()
                 }
-                self.memory.process_input(episode_vector, metadata)
+                self.memory.process_input(episode_vector, metadata=metadata)
 
             elif isinstance(data, list):
                 # Process as dataset/list
@@ -95,9 +95,9 @@ class WisdomProcessor:
                     'source': os.path.basename(file_path),
                     'type': 'dataset',
                     'items': len(data),
-                    'processed_at': time.time()
+                    'timestamp': time.time()
                 }
-                self.memory.process_input(summary_vector, metadata)
+                self.memory.process_input(summary_vector, metadata=metadata)
 
             print(f"  ✅ Processed JSON: {os.path.basename(file_path)}")
             return True
@@ -136,9 +136,16 @@ class WisdomProcessor:
                     # Continue processing even if one concept fails
                     continue
 
-            # Store in episodic memory (avoid process_input for now)
+            # Store in episodic memory
             episode_vector = np.random.randn(1024).astype(np.float32)
-            self.memory.episodic.storage.append(episode_vector)
+            metadata = {
+                'source': filename,
+                'type': 'pdf_research',
+                'paper_id': paper_id,
+                'concepts': list(concepts.keys()),
+                'timestamp': time.time()
+            }
+            self.memory.episodic.store_episode(episode_vector, metadata)
 
             print(f"  📚 Processed PDF: {filename}")
             return True

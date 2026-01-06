@@ -250,7 +250,7 @@ class MassiveDataStreamer:
         self.kb = CompressedKnowledgeBase("./massive_kb")
         self.processor = StreamingDataProcessor()
 
-    async def stream_from_huggingface(self, dataset_name: str, split: str = "train",
+    async def stream_from_huggingface(self, dataset_name: str, config_name: str = None, split: str = "train",
                                     domain: str = "academic", max_samples: int = None) -> AsyncGenerator[Dict[str, Any], None]:
         """
         Stream data from HuggingFace datasets.
@@ -258,7 +258,11 @@ class MassiveDataStreamer:
         try:
             from datasets import load_dataset
 
-            dataset = load_dataset(dataset_name, split=split)
+            # Use streaming=True to avoid OOM on large datasets
+            if config_name:
+                dataset = load_dataset(dataset_name, config_name, split=split, streaming=True)
+            else:
+                dataset = load_dataset(dataset_name, split=split, streaming=True)
 
             count = 0
             for example in dataset:
@@ -370,14 +374,38 @@ class MassiveDataStreamer:
             print(f"API streaming error: {e}")
 
 
+async def async_stream_huggingface_dataset(dataset_name: str, config_name: str = None, domain: str = "academic",
+                                         max_samples: int = 1000) -> str:
+    """Async version of HuggingFace streaming tool"""
+    streamer = MassiveDataStreamer()
+    await streamer.kb.load_async()
+
+    ingestor = MassiveDataIngestor(streamer.kb)
+
+    # Create data stream
+    data_stream = streamer.stream_from_huggingface(
+        dataset_name, config_name=config_name, domain=domain, max_samples=max_samples
+    )
+
+    # Ingest the data
+    await ingestor.ingest_data_stream(data_stream, domain=domain)
+
+    # Save results
+    await streamer.kb.save_async()
+
+    stats = ingestor.get_ingestion_stats()
+    return f"HuggingFace dataset '{dataset_name}' ingested: {stats['total_stored']} knowledge nodes created"
+
+
 @ToolRegistry.register(name="stream_huggingface_dataset")
-def stream_huggingface_dataset(dataset_name: str, domain: str = "academic",
+def stream_huggingface_dataset(dataset_name: str, config_name: str = None, domain: str = "academic",
                               max_samples: int = 1000) -> str:
     """
     Stream and compress a HuggingFace dataset.
 
     Args:
-        dataset_name: HuggingFace dataset name (e.g., "wikitext/wikitext-2-raw-v1")
+        dataset_name: HuggingFace dataset name (e.g., "wikitext")
+        config_name: Specific config (e.g., "wikitext-103-v1")
         domain: Knowledge domain
         max_samples: Maximum samples to process
 
@@ -385,29 +413,7 @@ def stream_huggingface_dataset(dataset_name: str, domain: str = "academic",
         Ingestion results
     """
     try:
-        async def run_streaming():
-            streamer = MassiveDataStreamer()
-            await streamer.kb.load_async()
-
-            ingestor = MassiveDataIngestor(streamer.kb)
-
-            # Create data stream
-            data_stream = streamer.stream_from_huggingface(
-                dataset_name, domain=domain, max_samples=max_samples
-            )
-
-            # Ingest the data
-            await ingestor.ingest_data_stream(data_stream, domain=domain)
-
-            # Save results
-            await streamer.kb.save_async()
-
-            stats = ingestor.get_ingestion_stats()
-            return f"HuggingFace dataset '{dataset_name}' ingested: {stats['total_stored']} knowledge nodes created"
-
-        result = asyncio.run(run_streaming())
-        return result
-
+        return asyncio.run(async_stream_huggingface_dataset(dataset_name, config_name, domain, max_samples))
     except Exception as e:
         return f"HuggingFace streaming failed: {str(e)}"
 

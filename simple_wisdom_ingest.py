@@ -29,6 +29,11 @@ def ensure_directories():
 def scan_for_drives():
     """Scan for mounted external drives"""
     volumes_path = "/Volumes"
+    # Target the user's specific drive first
+    target_drive = "/Volumes/3NCRYPT3D_V4ULT"
+    if os.path.exists(target_drive):
+        return [target_drive]
+
     base_volumes = {'Macintosh HD', '.timemachine', 'com.apple.TimeMachine.localsnapshots'}
 
     try:
@@ -152,7 +157,7 @@ def main():
             continue
 
         # Ingest files
-        stats = ingest_wisdom_files(drive_path, max_files=1000)  # Allow up to 1000 files
+        stats = ingest_wisdom_files(drive_path, max_files=5000)  # Increase to 5000 for full ingestion
         total_ingested += stats[0]
 
         # Log results

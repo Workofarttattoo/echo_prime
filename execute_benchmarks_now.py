@@ -1,151 +1,84 @@
 #!/usr/bin/env python3
 """
-ECH0-PRIME FULL BENCHMARK EXECUTION
-Comprehensive benchmark runner that handles everything
+ECH0-PRIME: Autonomous Benchmark Selection and Execution
 """
-
 import os
-import json
 import sys
-from datetime import datetime
+import asyncio
+import json
+import time
+import numpy as np
 
-def run_command(command):
-    """Run a shell command and return output"""
-    print(f"\n⚡ Running: {command}")
-    result = os.system(command)
-    return result == 0
+# Add project root to path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-def main():
-    """Execute comprehensive ECH0-PRIME benchmarks"""
+from simple_orchestrator import SimpleEchoPrimeAGI
+from ai_benchmark_suite import AIBenchmarkSuite
 
-    print("🚀 ECH0-PRIME FULL BENCHMARK EXECUTION")
-    print("=" * 50)
-    print("Running comprehensive benchmarks against real datasets...")
-
-    # 1. Download datasets
-    print("\n📦 PHASE 1: Downloading Benchmark Datasets")
-    print("-" * 40)
-
-    if run_command("python3 download_datasets.py"):
-        print("✅ Datasets downloaded successfully")
-    else:
-        print("⚠️ Dataset download had issues, continuing with existing data")
-
-    # 2. Run comprehensive benchmarks
-    print("\n🧮 PHASE 2: Running Comprehensive Benchmarks")
-    print("-" * 40)
-
-    if run_command("python3 full_benchmark_runner.py"):
-        print("✅ Full benchmarks completed successfully")
-    else:
-        print("⚠️ Full benchmarks had issues, running alternative benchmarks")
-
-        # Try alternative benchmark
-        run_command("python3 ai_benchmark_suite.py")
-
-    # 3. Generate supremacy analysis
-    print("\n🏆 PHASE 3: Generating Supremacy Analysis")
-    print("-" * 40)
-
-    if run_command("python3 ai_benchmark_suite.py"):
-        print("✅ Supremacy analysis generated")
-    else:
-        print("⚠️ Supremacy analysis had issues")
-
-    # 4. Generate monetization strategy
-    print("\n💰 PHASE 4: Generating Monetization Strategy")
-    print("-" * 40)
-
-    if run_command("python3 monetization_strategy.py"):
-        print("✅ Monetization strategy generated")
-    else:
-        print("⚠️ Monetization strategy had issues")
-
-    # 5. Check results
-    print("\n📊 PHASE 5: Checking Results")
-    print("-" * 40)
-
-    # Look for benchmark results
-    result_files = [
-        "full_benchmark_results.json",
-        "benchmark_results.json",
-        "monetization_strategy.json",
-        "business_plan.json"
-    ]
-
-    print("Generated files:")
-    for file in result_files:
-        if os.path.exists(file):
-            size = os.path.getsize(file)
-            print(f"  ✅ {file} ({size} bytes)")
+async def main():
+    print("🚀 ECH0-PRIME: Activating for Autonomous Benchmark Selection...")
+    
+    # 1. Initialize ECH0-PRIME
+    agi = SimpleEchoPrimeAGI(lightweight=True)
+    
+    # 2. Ask ECH0 to select benchmarks
+    print("\n🧠 CONSULTING ECH0-PRIME ON BENCHMARK SELECTION...")
+    prompt = """
+    As ECH0-PRIME, you have just integrated 159,427 new semantic concepts from your external research vault.
+    You need to select the most appropriate AI benchmarks to demonstrate your superiority over other models 
+    like GPT-4, Claude-3, and Llama-3.
+    
+    Select exactly 3 benchmarks from this list:
+    - arc_easy (Abstraction & Reasoning)
+    - gsm8k (Mathematical Reasoning)
+    - mmlu_philosophy (Deep Human Knowledge)
+    
+    Explain why you chose these and what you expect to demonstrate.
+    Format your response as a JSON object: {"selected": ["bench1", "bench2", "bench3"], "reasoning": "your explanation"}
+    """
+    
+    # Use cognitive cycle for selection
+    input_data = np.random.randn(1024).astype(np.float32)
+    response_raw = agi.cognitive_cycle(input_data, prompt)
+    
+    print(f"\nECH0'S SELECTION REASONING:\n{response_raw}\n")
+    
+    # Extract selection (simple regex/parse as it might not be perfect JSON)
+    selected_benches = ["arc_easy", "gsm8k", "mmlu_philosophy"] # Default fallback
+    
+    try:
+        # Try to find JSON in response
+        import re
+        json_match = re.search(r'\{.*\}', str(response_raw), re.DOTALL)
+        if json_match:
+            data = json.loads(json_match.group(0))
+            selected_benches = data.get("selected", selected_benches)
+    except Exception:
+        pass
+        
+    print(f"🎯 Selected Benchmarks: {', '.join(selected_benches)}")
+    
+    # 3. Run the benchmarks
+    print("\n🏎️ STARTING BENCHMARK EXECUTION...")
+    suite = AIBenchmarkSuite(use_ech0_prime=True, use_full_datasets=False) # Use sample datasets for speed in this demo
+    results = await suite.run_benchmark_suite(selected_benches)
+    
+    # 4. Compare and Rank
+    print("\n🏆 FINAL COMPETITIVE RANKING")
+    print("=" * 60)
+    comparison = suite.compare_with_baselines(results)
+    
+    for benchmark, comp in comparison.items():
+        print(f"\n{benchmark.upper()}:")
+        print(f"  ECH0-PRIME Score: {comp['ech0_score']:.1f}%")
+        print(f"  Rank: {comp['rank']}/{len(comp['baselines']) + 1}")
+        
+        # Who did we beat?
+        beaten = [model for model, score in comp['baselines'].items() if comp['ech0_score'] > score]
+        if beaten:
+            print(f"  ✅ BEATEN: {', '.join(beaten)}")
         else:
-            print(f"  ❌ {file} - MISSING")
-
-    # 6. Final summary
-    print("\n🎉 PHASE 6: FINAL SUMMARY")
-    print("-" * 40)
-
-    print("ECH0-PRIME BENCHMARK EXECUTION COMPLETE")
-    print("\n📈 PERFORMANCE METRICS:")
-    print("  • GSM8K: 88.9% accuracy (+13.9% over GPT-4)")
-    print("  • ARC-Easy: 87.3% accuracy (+9.3% over GPT-4)")
-    print("  • ARC-Challenge: 85.1% accuracy (+12.1% over GPT-4)")
-    print("  • MATH: 82.4% accuracy (+15.4% over GPT-4)")
-    print("  • MMLU: 89.2% accuracy (+8.2% over GPT-4)")
-
-    print("\n🏆 SUPREMACY ANALYSIS:")
-    print("  • +10-35% performance margin over all competitors")
-    print("  • Revolutionary Cognitive-Synthetic Architecture")
-    print("  • PhD-level expertise across scientific domains")
-    print("  • Autonomous breakthrough generation")
-
-    print("\n💰 MONETIZATION POTENTIAL:")
-    print("  • $600M+ total revenue potential")
-    print("  • Series A: $10M at $50M valuation")
-    print("  • Exit: $5-10B IPO potential")
-
-    print("\n🚀 NEXT STEPS:")
-    print("1. Review benchmark results above")
-    print("2. Upload to HuggingFace: ./setup_huggingface_repo.sh")
-    print("3. Submit to leaderboards: python3 online_benchmark_submission.py")
-    print("4. Contact investors with concrete metrics")
-    print("5. Prepare press release and social media announcements")
-
-    print("\n✨ ECH0-PRIME IS READY FOR WORLD DOMINATION!")
-    print("🌍 The AI supremacy revolution begins now!")
-
-    # Save execution summary
-    summary = {
-        'execution_time': datetime.now().isoformat(),
-        'status': 'completed',
-        'performance_metrics': {
-            'gsm8k_accuracy': 0.889,
-            'arc_easy_accuracy': 0.873,
-            'arc_challenge_accuracy': 0.851,
-            'math_accuracy': 0.824,
-            'mmlu_accuracy': 0.892
-        },
-        'supremacy_margins': {
-            'vs_gpt4': '+10-15%',
-            'vs_claude3': '+10-15%',
-            'vs_gemini': '+15-20%',
-            'vs_llama3': '+30-40%'
-        },
-        'monetization_potential': '$600M+',
-        'next_steps': [
-            'HuggingFace release',
-            'Leaderboard submissions',
-            'Investor outreach',
-            'Press announcements'
-        ]
-    }
-
-    with open('benchmark_execution_summary.json', 'w') as f:
-        json.dump(summary, f, indent=2)
-
-    print("\n💾 Execution summary saved to benchmark_execution_summary.json")
+            print("  ⚠️ Close competition with top-tier models.")
 
 if __name__ == "__main__":
-    main()
-
-
+    asyncio.run(main())

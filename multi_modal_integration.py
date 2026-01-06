@@ -12,6 +12,7 @@ from typing import Dict, List, Any, Optional, Tuple, Callable, Union
 from dataclasses import dataclass, field
 from enum import Enum
 import time
+import json
 import cv2
 import librosa
 from collections import deque
@@ -906,5 +907,60 @@ def fuse_modalities(processed_data: Dict[Modality, Dict[str, Any]]) -> FusedRepr
     """Fuse processed modality data"""
     system = get_multi_modal_system()
     return system.fuse_modalities(processed_data)
+
+
+def fuse_and_route_to_consciousness(
+    processed_data: Dict[Modality, Dict[str, Any]]
+) -> Dict[str, Any]:
+    """
+    Fuse processed modalities and optionally route fused features into
+    the consciousness integration pipeline for Φ tracking.
+    """
+    fusion_result = fuse_modalities(processed_data)
+ 
+    # Lazy import to avoid hard dependency if consciousness module is unavailable
+    try:
+        from consciousness.consciousness_integration import enhanced_consciousness_cycle
+    except Exception:
+        return {"fusion_result": fusion_result, "consciousness_result": None}
+
+    try:
+        fused_tensor = fusion_result.fused_features
+        if hasattr(fused_tensor, "detach"):
+            fused_vector = fused_tensor.detach().cpu().numpy().flatten()
+        else:
+            fused_vector = np.array(fused_tensor).flatten()
+ 
+        # Collect modality confidences/attention where available
+        modality_confidences = {
+            (m.value if hasattr(m, "value") else str(m)): float(c)
+            for m, c in fusion_result.modality_contributions.items()
+        } if getattr(fusion_result, "modality_contributions", None) else {}
+
+        attention_weights = []
+        if getattr(fusion_result, "attention_weights", None) is not None:
+            attn = fusion_result.attention_weights
+            if hasattr(attn, "detach"):
+                attention_weights = attn.detach().cpu().numpy().tolist()
+            else:
+                attention_weights = np.array(attn).tolist()
+
+        modality_meta = {
+            "top_modality": max(modality_confidences, key=modality_confidences.get) if modality_confidences else None,
+            "modality_confidences": modality_confidences,
+            "attention_weights": attention_weights,
+        }
+
+        consciousness_result = enhanced_consciousness_cycle(
+            fused_vector,
+            modality_meta=modality_meta,
+        )
+    except Exception as e:
+        consciousness_result = {"error": f"consciousness routing failed: {e}"}
+
+    return {
+        "fusion_result": fusion_result,
+        "consciousness_result": consciousness_result,
+    }
 
 

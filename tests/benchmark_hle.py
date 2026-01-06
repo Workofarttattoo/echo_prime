@@ -5,12 +5,14 @@ import numpy as np
 from datasets import load_dataset
 import tempfile
 from PIL import Image
+import json
+from datetime import datetime
 
 # Add project root to path
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
 
-from main_orchestrator import EchoPrimeAGI
+from simple_orchestrator import SimpleEchoPrimeAGI
 from training.intelligent_grader import IntelligentGrader
 try:
     from benchmark_tracker import update_benchmark_stats
@@ -22,7 +24,7 @@ except ImportError:
 
 def run_hle_benchmark(limit=5):
     print("Initializing ECH0-PRIME for HLE Benchmarking...")
-    agi = EchoPrimeAGI(enable_voice=False)
+    agi = SimpleEchoPrimeAGI(lightweight=True)
     grader = IntelligentGrader()
     
     # ... rest remains ...
@@ -80,6 +82,8 @@ def run_hle_benchmark(limit=5):
         results.append({
             "subject": subject,
             "status": status,
+            "score": float(score_val),
+            "justification": justification,
             "expected": answer,
             "response": response[:200]
         })
@@ -99,11 +103,39 @@ def run_hle_benchmark(limit=5):
     print("\n" + "="*60)
     print(f"COMPLETE. SCORE: {score}/{len(samples)} ({(score/len(samples))*100:.1f}%)")
     print(f"Full logs saved to: {log_file}")
+
+    # Save a machine-readable JSON result for downstream "verified results" aggregation
+    try:
+        os.makedirs("benchmark_results", exist_ok=True)
+        out_path = os.path.join(
+            "benchmark_results",
+            f"hle_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        )
+        with open(out_path, "w") as f:
+            json.dump({
+                "benchmark": "HLE",
+                "dataset": "cais/hle",
+                "split": "test",
+                "limit": int(limit),
+                "num_samples": int(len(samples)),
+                "average_score": float(score / len(samples)) if len(samples) else 0.0,
+                "percent_score": float((score / len(samples)) * 100) if len(samples) else 0.0,
+                "timestamp": time.time(),
+                "results": results,
+            }, f, indent=2)
+        print(f"JSON results saved to: {out_path}")
+    except Exception as e:
+        print(f"⚠️ Could not write HLE JSON results: {e}")
     
     return results
 
 if __name__ == "__main__":
     from dotenv import load_dotenv
     load_dotenv()
-    # Run a small batch first
-    run_hle_benchmark(limit=5)
+    
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--limit", type=int, default=5)
+    args = parser.parse_args()
+    
+    run_hle_benchmark(limit=args.limit)

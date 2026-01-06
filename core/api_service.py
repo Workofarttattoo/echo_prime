@@ -2,16 +2,25 @@ import asyncio
 import json
 import socket
 from pathlib import Path
-from typing import List, Optional, Dict, Mapping, cast
+from typing import List, Optional, Dict, Mapping, cast, Any
+from queue import Queue
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 import uvicorn
 import os
+import time
+from contextlib import asynccontextmanager
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global event_loop
+    event_loop = asyncio.get_running_loop()
+    yield
+
+app = FastAPI(lifespan=lifespan)
 
 # Enable CORS for the React dashboard
 app.add_middleware(
@@ -22,11 +31,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve the dashboard static files
-dashboard_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "dashboard")
-if os.path.exists(dashboard_path):
-    app.mount("/dashboard", StaticFiles(directory=dashboard_path, html=True), name="dashboard")
-    print(f"✅ Dashboard served at http://localhost:8000/dashboard")
+# Mounting static files for vision feed
+sensory_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "sensory_input")
+if not os.path.exists(sensory_path):
+    os.makedirs(sensory_path)
+app.mount("/sensory", StaticFiles(directory=sensory_path), name="sensory")
+
+# Serve the modern v2 dashboard as the primary interface
+dashboard_v2_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "dashboard", "v2", "dist")
+legacy_dashboard_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "dashboard")
+
+if os.path.exists(dashboard_v2_path):
+    app.mount("/dashboard", StaticFiles(directory=dashboard_v2_path, html=True), name="dashboard")
+    
+    # Mount legacy dashboard at /v1
+    if os.path.exists(legacy_dashboard_path):
+        app.mount("/v1", StaticFiles(directory=legacy_dashboard_path, html=True), name="v1")
+elif os.path.exists(legacy_dashboard_path):
+    app.mount("/dashboard", StaticFiles(directory=legacy_dashboard_path, html=True), name="dashboard")
 
 @app.get("/")
 async def root():
@@ -62,8 +84,50 @@ current_state = {
     "sensory": {"active_visual": None, "audio_input_detected": False}
 }
 voice_enabled = True
-speech_input_queue = None # Set by main_orchestrator
+# Main orchestrator will replace this with its transcription queue; we keep a fallback to avoid 500s
+speech_input_queue: Optional[Queue] = None
+pending_level: Optional[int] = None
+agi_instance = None # Set by main_orchestrator
 event_loop = None # Set by start_api_server
+
+@app.post("/set_level")
+async def set_level(data: Mapping[str, object]):
+    """Sets the operational level of the AGI."""
+    global agi_instance
+    level = data.get("level")
+    if level is not None and agi_instance:
+        try:
+            level_int = int(level)
+            agi_instance.set_operational_level(level_int)
+            return {"status": "success", "level": level_int}
+        except (ValueError, TypeError):
+            return {"status": "error", "message": "Invalid level format"}
+    return {"status": "error", "message": "AGI instance not connected or level missing"}
+
+@app.post("/ingest_wisdom")
+async def ingest_wisdom():
+    """Triggers the wisdom ingestion process from the external drive."""
+    import subprocess
+    try:
+        # Run the ingestion script as a separate process
+        process = subprocess.Popen([sys.executable, "simple_wisdom_ingest.py"], 
+                                   stdout=subprocess.PIPE, 
+                                   stderr=subprocess.PIPE)
+        return {"status": "started", "message": "Ingestion process initiated in background."}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@app.post("/process_wisdom")
+async def process_wisdom():
+    """Triggers the cognitive integration of ingested wisdom."""
+    import subprocess
+    try:
+        process = subprocess.Popen([sys.executable, "wisdom_processor.py"], 
+                                   stdout=subprocess.PIPE, 
+                                   stderr=subprocess.PIPE)
+        return {"status": "started", "message": "Cognitive integration initiated in background."}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
 @app.post("/speech")
 async def receive_speech(data: Mapping[str, object]):
@@ -72,18 +136,32 @@ async def receive_speech(data: Mapping[str, object]):
     if text and speech_input_queue is not None:
         speech_input_queue.put(text)
         return {"status": "received", "text": text}
-    return {"status": "ignored"}
+    return {"status": "ignored", "error": "queue_not_ready"}
 
-@app.post("/text-input")
-async def receive_text_input(data: Mapping[str, object]):
-    """Receives text input from the dashboard GUI text window."""
-    text = str(data.get("text", ""))
-    if text and speech_input_queue is not None:
-        # Use the same queue as speech input for processing
-        speech_input_queue.put(text)
-        return {"status": "received", "text": text}
-    return {"status": "ignored", "error": "Queue not initialized"}
+async def broadcast_state(state: Dict[str, Any]):
+    """Broadcasts the state to all connected WebSocket clients."""
+    await manager.broadcast(json.dumps(state))
 
+def push_state_to_ui(state: Dict[str, object]):
+    """Directly updates the state and broadcasts via WebSocket without HTTP overhead."""
+    global current_state, event_loop
+    current_state = state
+    
+    if event_loop:
+        try:
+            # Check if we are already in the event loop
+            try:
+                running_loop = asyncio.get_running_loop()
+                if running_loop == event_loop:
+                    event_loop.create_task(broadcast_state(dict(state))) # type: ignore
+                    return
+            except RuntimeError:
+                pass
+            
+            # Not in the loop, use threadsafe
+            asyncio.run_coroutine_threadsafe(broadcast_state(dict(state)), event_loop) # type: ignore
+        except Exception:
+            pass
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
@@ -98,26 +176,13 @@ async def websocket_endpoint(websocket: WebSocket):
     except WebSocketDisconnect:
         manager.disconnect(websocket)
 
-def push_state_to_ui(state: Dict[str, object]):
-    """Directly updates the state and broadcasts via WebSocket without HTTP overhead."""
-    global current_state, event_loop
-    current_state = state
-    # Use the stored loop if available
-    if event_loop and event_loop.is_running():
-        _fut = asyncio.run_coroutine_threadsafe(manager.broadcast(json.dumps(state)), event_loop)
-    else:
-        # Fallback if loop isn't set yet (startup race)
-        try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                _fut = asyncio.run_coroutine_threadsafe(manager.broadcast(json.dumps(state)), loop)
-        except Exception:
-            pass
-
+@app.post("/state")
 @app.post("/update_state")
-async def update_state(state: Dict[str, object]):
-    """Legacy HTTP support for external tools."""
-    push_state_to_ui(state)
+async def update_state(data: Mapping[str, Any]):
+    """Update the global state and broadcast it."""
+    global current_state
+    current_state = dict(data)
+    await broadcast_state(current_state)
     return {"status": "success"}
 
 @app.post("/mute")
@@ -136,6 +201,29 @@ async def get_voice_status():
 @app.get("/health")
 async def health():
     return {"status": "healthy"}
+
+@app.post("/set_level")
+async def set_level(data: Mapping[str, object]):
+    """Set operational level requested from UI."""
+    global pending_level
+    try:
+        level_val = int(data.get("level", 10))
+        pending_level = level_val
+        await manager.broadcast(json.dumps({"control": {"pending_level": level_val}}))
+        return {"status": "success", "level": level_val}
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
+
+@app.post("/ingest_wisdom")
+async def ingest_wisdom():
+    """Stub endpoint for Mission Control (ingest)."""
+    # Placeholder: real ingestion should be wired to orchestrator task queue.
+    return {"status": "started"}
+
+@app.post("/process_wisdom")
+async def process_wisdom():
+    """Stub endpoint for Mission Control (process)."""
+    return {"status": "started"}
 
 def _find_open_port(preferred_port: Optional[int] = None) -> int:
     """
@@ -168,19 +256,40 @@ def start_api_server(port: Optional[int] = None) -> None:
 
     chosen_port = _find_open_port(port)
     print(f"🌐 Starting API server on port {chosen_port}")
-
-    # Persist port info so the dashboard can auto-connect
+    
+    dashboard_v2_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "dashboard", "v2", "dist")
+    legacy_dashboard_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "dashboard")
+    
+    if os.path.exists(dashboard_v2_path):
+        print(f"🚀 Modern Dashboard (v2) served at http://localhost:{chosen_port}/dashboard")
+        if os.path.exists(legacy_dashboard_path):
+            print(f"📜 Legacy Dashboard (v1) available at http://localhost:{chosen_port}/v1")
+    elif os.path.exists(legacy_dashboard_path):
+        print(f"✅ Dashboard (v1) served at http://localhost:{chosen_port}/dashboard")
     try:
-        ws_url = f"ws://localhost:{chosen_port}/ws"
+        ws_url = f"ws://127.0.0.1:{chosen_port}/ws"
         port_info = {"port": chosen_port, "ws_url": ws_url}
+        print(f"📄 Persisting port info to data files... (port {chosen_port})")
 
-        legacy_path = Path(__file__).resolve().parent.parent / "dashboard" / "data" / "api_port.json"
+        root_dir = Path(__file__).resolve().parent.parent
+        print(f"📂 Project root identified as: {root_dir}")
+
+        legacy_path = root_dir / "dashboard" / "data" / "api_port.json"
         legacy_path.parent.mkdir(parents=True, exist_ok=True)
-        _ = legacy_path.write_text(json.dumps(port_info, indent=2))
+        legacy_path.write_text(json.dumps(port_info, indent=2))
+        print(f"✅ Wrote legacy path: {legacy_path}")
 
-        v2_path = Path(__file__).resolve().parent.parent / "dashboard" / "v2" / "public" / "data" / "api_port.json"
+        v2_path = root_dir / "dashboard" / "v2" / "public" / "data" / "api_port.json"
         v2_path.parent.mkdir(parents=True, exist_ok=True)
-        _ = v2_path.write_text(json.dumps(port_info, indent=2))
+        v2_path.write_text(json.dumps(port_info, indent=2))
+        print(f"✅ Wrote v2 path: {v2_path}")
+        
+        # Also write to dist/data for the production build if it exists
+        v2_dist_path = root_dir / "dashboard" / "v2" / "dist" / "data" / "api_port.json"
+        if v2_dist_path.parent.parent.exists(): # If dist exists
+            v2_dist_path.parent.mkdir(parents=True, exist_ok=True)
+            v2_dist_path.write_text(json.dumps(port_info, indent=2))
+            print(f"✅ Wrote v2 dist path: {v2_dist_path}")
     except Exception as port_err:
         print(f"⚠️ Could not persist port info: {port_err}")
 
@@ -189,4 +298,4 @@ def start_api_server(port: Optional[int] = None) -> None:
     server.run()
 
 if __name__ == "__main__":
-    start_api_server()
+    start_api_server(8000)

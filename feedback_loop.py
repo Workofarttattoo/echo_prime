@@ -580,6 +580,12 @@ class ContinuousLearningLoop:
         self.learning_active = False
         print("🛑 Learning loop stopped")
 
+    async def shutdown(self):
+        """Gracefully shutdown the learning loop and its tasks."""
+        self.learning_active = False
+        # If there's a way to cancel the specific loop task, we'd do it here
+        print("🧠 Feedback loop shutdown initiated")
+
     def get_learning_stats(self) -> Dict[str, Any]:
         """Get comprehensive learning statistics"""
         feedback_stats = self.collector.get_feedback_stats()

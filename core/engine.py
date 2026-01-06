@@ -122,20 +122,18 @@ class HierarchicalGenerativeModel(nn.Module):
         super().__init__()
         self.use_cuda = use_cuda and torch.cuda.is_available()
         self.device = torch.device("cuda" if self.use_cuda else "cpu")
-        self.lightweight = lightweight
         
-        # Define dimensions for each level
+        # Define dimensions for each level. Lightweight mode keeps the shape but
+        # shrinks sizes to avoid memory blow-ups during benchmarks/smoke tests.
         if lightweight:
-            # Drastically reduced dimensions for lightweight mode (e.g. for testing/debugging)
             dims = [
-                (1000, 512, "Sensory"),      # Level 0: 1K -> 512
-                (512, 256, "Perceptual"),    # Level 1: 512 -> 256
-                (256, 128, "Associative"),   # Level 2: 256 -> 128
-                (128, 64, "Prefrontal"),     # Level 3: 128 -> 64
-                (64, 10, "Meta")             # Level 4: 64 -> 10
+                (4096, 1024, "Sensory"),      # Level 0: 4K -> 1K
+                (1024, 256, "Perceptual"),    # Level 1: 1K -> 256
+                (256, 128, "Associative"),    # Level 2: 256 -> 128
+                (128, 64, "Prefrontal"),      # Level 3: 128 -> 64
+                (64, 16, "Meta")              # Level 4: 64 -> 16
             ]
         else:
-            # Original dimensions (potentially very large)
             dims = [
                 (1000000, 100000, "Sensory"),      # Level 0: 1M -> 100K
                 (100000, 10000, "Perceptual"),     # Level 1: 100K -> 10K
@@ -166,40 +164,40 @@ class HierarchicalGenerativeModel(nn.Module):
         2. Bottom-up: Level L-1 sends error to Level L.
         3. Local: Update expectations to minimize error.
         """
-        # Base dimension for level 0
-        base_dim = self.levels[0].input_dim
-        
         # Initialize sensory input if not provided
+        first_level_dim = self.levels[0].input_dim
         if sensory_input is None:
-            sensory_input = torch.zeros(base_dim, device=self.device)
+            sensory_input = torch.zeros(1, first_level_dim, device=self.device)
         else:
             # Ensure it's on the right device and right size
             if isinstance(sensory_input, np.ndarray):
                 sensory_input = torch.from_numpy(sensory_input).float()
-            sensory_input = sensory_input.to(self.device)
+            sensory_input = sensory_input.to(self.device).view(1, -1)
+            
             # Pad or truncate to match expected size
-            if len(sensory_input) < base_dim:
-                sensory_input = F.pad(sensory_input, (0, base_dim - len(sensory_input)))
-            elif len(sensory_input) > base_dim:
-                sensory_input = sensory_input[:base_dim]
+            current_dim = sensory_input.shape[-1]
+            if current_dim < first_level_dim:
+                sensory_input = F.pad(sensory_input, (0, first_level_dim - current_dim))
+            elif current_dim > first_level_dim:
+                sensory_input = sensory_input[:, :first_level_dim]
         
         # Bottom-up pass: encode from sensory to meta
         current_input = sensory_input
         expectations = []
         
         for i, level in enumerate(self.levels):
+            print(f"DEBUG: Level {i} {level.name} - Input shape: {current_input.shape}")
             expectation, error, precision = level(current_input)
             expectations.append(expectation)
             current_input = expectation  # Next level's input is this level's expectation
+            print(f"DEBUG: Level {i} {level.name} - Output shape: {expectation.shape}")
         
-        # Top-down pass: decode from meta to sensory
+        # Top-down pass: decode from Level L to Level L-1
         top_down_predictions = []
-        
         for i in range(len(self.levels) - 1, -1, -1):
             level = self.levels[i]
-            # Each level i decodes its own expectation to predict its own input
-            # (which is the output/expectation of level i-1)
-            prediction = level.decode(expectations[i])
+            current_expectation = expectations[i]
+            prediction = level.decode(current_expectation)
             top_down_predictions.insert(0, prediction)
         
         # Recompute with top-down predictions
@@ -239,23 +237,25 @@ class FreeEnergyEngine:
         self.model = model
         self.learning_rate = learning_rate
         self.optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-        
+    
     def calculate_free_energy(self, sensory_input: Optional[torch.Tensor] = None) -> float:
         """
         Calculates total free energy across all levels.
         F = -log p(x|z) + KL(q(z|x) || p(z))
         """
-        base_dim = self.model.levels[0].input_dim
+        first_level_dim = self.model.levels[0].input_dim
         if sensory_input is None:
-            sensory_input = torch.zeros(base_dim, device=self.model.device)
+            sensory_input = torch.zeros(1, first_level_dim, device=self.model.device)
         else:
             if isinstance(sensory_input, np.ndarray):
                 sensory_input = torch.from_numpy(sensory_input).float()
-            sensory_input = sensory_input.to(self.model.device)
-            if len(sensory_input) < base_dim:
-                sensory_input = F.pad(sensory_input, (0, base_dim - len(sensory_input)))
-            elif len(sensory_input) > base_dim:
-                sensory_input = sensory_input[:base_dim]
+            sensory_input = sensory_input.to(self.model.device).view(1, -1)
+            
+            current_dim = sensory_input.shape[-1]
+            if current_dim < first_level_dim:
+                sensory_input = F.pad(sensory_input, (0, first_level_dim - current_dim))
+            elif current_dim > first_level_dim:
+                sensory_input = sensory_input[:, :first_level_dim]
         
         # Forward pass
         self.model.step(sensory_input)
@@ -288,7 +288,6 @@ class FreeEnergyEngine:
         Optimize the model to minimize free energy.
         """
         self.model.train()
-        base_dim = self.model.levels[0].input_dim
         
         for iteration in range(iterations):
             self.optimizer.zero_grad()
@@ -301,21 +300,27 @@ class FreeEnergyEngine:
             fe_tensor = torch.tensor(fe, device=self.model.device, requires_grad=True)
             
             # Recompute to get gradients
+            first_level_dim = self.model.levels[0].input_dim
             if sensory_input is None:
-                sensory_input = torch.zeros(base_dim, device=self.model.device, requires_grad=True)
+                current_input = torch.zeros(1, first_level_dim, device=self.model.device, requires_grad=True)
             else:
                 if isinstance(sensory_input, np.ndarray):
-                    sensory_input = torch.from_numpy(sensory_input).float()
-                sensory_input = sensory_input.to(self.model.device)
-                if not sensory_input.requires_grad:
-                    sensory_input = sensory_input.requires_grad_(True)
-                if len(sensory_input) < base_dim:
-                    sensory_input = F.pad(sensory_input, (0, base_dim - len(sensory_input)))
-                elif len(sensory_input) > base_dim:
-                    sensory_input = sensory_input[:base_dim]
+                    current_input = torch.from_numpy(sensory_input).float()
+                else:
+                    current_input = sensory_input.clone()
+                
+                current_input = current_input.to(self.model.device).view(1, -1)
+                if not current_input.requires_grad:
+                    current_input = current_input.requires_grad_(True)
+                
+                current_dim = current_input.shape[-1]
+                if current_dim < first_level_dim:
+                    current_input = F.pad(current_input, (0, first_level_dim - current_dim))
+                elif current_dim > first_level_dim:
+                    current_input = current_input[:, :first_level_dim]
             
             # Forward pass
-            self.model.step(sensory_input)
+            self.model.step(current_input)
             
             # Compute loss
             loss = torch.tensor(0.0, device=self.model.device, requires_grad=True)
@@ -382,14 +387,7 @@ class GlobalWorkspace:
                         # Normalize and compute cosine similarity
                         s1_norm = s1 / (s1.norm() + 1e-9)
                         s2_norm = s2 / (s2.norm() + 1e-9)
-                        # Resize to same dimension if needed for dot product
-                        if len(s1_norm) != len(s2_norm):
-                            target_size = max(len(s1_norm), len(s2_norm))
-                            s1_padded = F.pad(s1_norm, (0, target_size - len(s1_norm)))
-                            s2_padded = F.pad(s2_norm, (0, target_size - len(s2_norm)))
-                            sim = torch.dot(s1_padded, s2_padded).item()
-                        else:
-                            sim = torch.dot(s1_norm, s2_norm).item()
+                        sim = torch.dot(s1_norm, s2_norm).item()
                         similarities.append(sim)
                     self.synchrony = np.mean(similarities) if similarities else 0.0
                 else:

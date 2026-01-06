@@ -15,7 +15,7 @@ from tests.benchmark_hle import run_hle_benchmark
 from ai_benchmark_suite import AIBenchmarkSuite
 
 async def run_full_suite():
-    print("🏆 ECH0-PRIME Unified Benchmark Execution Suite")
+    print("🏆 ECH0-PRIME Unified Benchmark Execution Suite [FULL RUN]")
     print("="*60)
     print(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}")
     print("Phase: 2 - Capability Development")
@@ -26,7 +26,8 @@ async def run_full_suite():
     # 1. Turing Test
     print("1. [TURING TEST] Testing Human-Indistinguishability...")
     try:
-        turing_results = run_turing_test(limit=5)
+        # Increased limit for full run
+        turing_results = run_turing_test(limit=20)
         summary['Turing'] = {
             "score": sum(r['score'] for r in turing_results) / len(turing_results) * 100,
             "status": "PASS" if all(r['status'] == "PASS" for r in turing_results) else "COMPLETE"
@@ -38,9 +39,8 @@ async def run_full_suite():
     # 2. AGI Test (ARC)
     print("\n2. [ARC-AGI TEST] Testing Fluid Reasoning...")
     try:
-        # Use a small limit for quick validation
-        arc_score = run_arc_benchmark(limit=3)
-        # Note: run_arc_benchmark doesn't return score directly in original script, but we'll assume it worked
+        # Use a larger limit for full validation
+        arc_score = run_arc_benchmark(limit=50)
         summary['ARC-AGI'] = {"status": "COMPLETE"}
     except Exception as e:
         print(f"❌ ARC-AGI failed: {e}")
@@ -49,7 +49,8 @@ async def run_full_suite():
     # 3. HLE (Humanity's Last Exam)
     print("\n3. [HLE TEST] Testing Humanity's Last Exam...")
     try:
-        hle_results = run_hle_benchmark(limit=3)
+        # Full run for HLE
+        hle_results = run_hle_benchmark(limit=100)
         summary['HLE'] = {"status": "COMPLETE"}
     except Exception as e:
         print(f"❌ HLE failed: {e}")
@@ -58,10 +59,11 @@ async def run_full_suite():
     # 4. Industry Standards (GSM8K, MMLU via synthetic/local fallback)
     print("\n4. [INDUSTRY STANDARDS] GSM8K, MMLU, etc...")
     try:
-        suite = AIBenchmarkSuite(use_ech0_prime=True, use_full_datasets=False)
-        industry_results = await suite.run_benchmark_suite(['gsm8k', 'mmlu_philosophy'])
+        suite = AIBenchmarkSuite(use_ech0_prime=True, use_full_datasets=True)
+        industry_results = await suite.run_benchmark_suite(['gsm8k', 'mmlu_philosophy', 'arc_easy'])
         summary['GSM8K'] = {"score": industry_results['results']['gsm8k']['score']}
         summary['MMLU'] = {"score": industry_results['results']['mmlu_philosophy']['score']}
+        summary['ARC-Easy'] = {"score": industry_results['results']['arc_easy']['score']}
     except Exception as e:
         print(f"❌ Industry standards failed: {e}")
         summary['Industry'] = {"error": str(e)}

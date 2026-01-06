@@ -111,9 +111,17 @@ def run_turing_test(limit=10):
         print(f"\rProcessing {i+1}/{min(limit, len(turing_questions))}: [{category}]", end="", flush=True)
         
         # Run cognitive cycle
-        intent = f"Turing Test Probe [{category}]: {question}"
-        outcome = agi.cognitive_cycle(np.random.randn(1000000), intent)
-        response = outcome.get("llm_insight", "No response")
+        # Use a more natural intent to avoid "test-taking" behavior
+        intent = question
+        # Zero sensory input for pure conversational tests to avoid distraction
+        zero_sensory = np.zeros(1000) if agi.lightweight_mode else np.zeros(1000000)
+        outcome = agi.cognitive_cycle(zero_sensory, intent)
+        
+        # Handle dictionary vs string response (from safety aborts)
+        if isinstance(outcome, dict):
+            response = outcome.get("llm_insight", "No response")
+        else:
+            response = str(outcome)
         
         # Grading (Higher weight on human-like quality)
         score_val, justification = grader.grade(question, expected, response)

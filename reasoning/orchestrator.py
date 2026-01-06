@@ -1,10 +1,16 @@
 import numpy as np
 import json
 import os
+import re
 from typing import Dict, List, Any, Optional
 
 # Import real probabilistic reasoning
 from reasoning.probabilistic import ProbabilisticReasoning as RealProbabilisticReasoning
+from reasoning.symbolic_manipulator import EnhancedMathematicalReasoner
+from reasoning.numerical_engine import EnhancedNumericalReasoner
+from reasoning.word_problem_parser import get_word_problem_solver
+from core.spatial_reasoning import EnhancedVisualReasoner
+from reasoning.task_manager import TaskManager
 
 class AnalogicalReasoning:
     """
@@ -51,14 +57,18 @@ class ReasoningOrchestrator:
                  governance_mem: PersistentMemory = None,
                  knowledge_graph: KnowledgeGraph = None,
                  qulab: QuLabBridge = None,
-                 arxiv: ArxivScanner = None,
-                 prompt_masterworks: Any = None):
+                 arxiv: ArxivScanner = None):
                  
         self.probabilistic = RealProbabilisticReasoning(latent_dim=100, device="cpu")
         self.analogy = AnalogicalReasoning()
         self.causal = RealCausalDiscovery(alpha=0.05)
+
+        # Enhanced reasoning capabilities for benchmark weaknesses
+        self.mathematical_reasoner = EnhancedMathematicalReasoner()
+        self.numerical_reasoner = EnhancedNumericalReasoner()
+        self.word_problem_parser = get_word_problem_solver()
+        self.visual_reasoner = EnhancedVisualReasoner()
         self.use_llm = use_llm
-        self.prompt_masterworks = prompt_masterworks
         
         self.llm_bridge = OllamaBridge(model=model_name) if use_llm else None
         self.vision_bridge = OllamaBridge(model=vision_model) if use_llm else None
@@ -77,6 +87,7 @@ class ReasoningOrchestrator:
         project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         scan_local_tools(os.path.join(project_root, "reasoning", "tools"))
         scan_local_tools(os.path.join(project_root, "ech0_governance"))
+        scan_local_tools(os.path.join(project_root, "capabilities"))
 
         # Phase 5: Goal-Directed Autonomy
         self.current_goal = "Assistant: Awaiting instructions from Joshua."
@@ -85,6 +96,9 @@ class ReasoningOrchestrator:
         # System 2: Metacognitive Reflection (2025 Architecture)
         from reasoning.metacognition import MetacognitiveCritic
         self.critic = MetacognitiveCritic(self.llm_bridge) if self.llm_bridge else None
+        
+        # Task Management
+        self.task_manager = TaskManager()
 
     def set_goal(self, goal: str):
         """Sets a long-term autonomous mission."""
@@ -92,39 +106,220 @@ class ReasoningOrchestrator:
         self.mission_history = []
         print(f"MISSION INITIALIZED: {goal}")
 
+    def benchmark_solve(self, question: str, choices: Optional[List[str]] = None, 
+                        context: Optional[Dict] = None, task_type: str = "general") -> str:
+        """
+        Standardized solver for benchmark questions.
+        Ensures LLM induction and proper choice selection.
+        """
+        mission_params = {"goal": question}
+        context = context or {}
+        
+        # Use existing reason_about_scenario logic
+        result = self.reason_about_scenario(context, mission_params)
+        response = result.get("llm_insight", "")
+        
+        # If choices are provided, we should ensure the response matches one
+        if choices:
+            # Try to find an explicit choice mentioned in the response
+            # Look for "The answer is A" or similar
+            import re
+            for i, choice in enumerate(choices):
+                # Check for "Choice 1", "Option 1", "1.", etc if 1-indexed
+                # Check for "A", "B", "C", "D" if lettered
+                label = chr(ord('A') + i)
+                if re.search(rf'\b{label}\b', response):
+                    return label # Return the label for consistency with typical benchmarks
+                
+            # If no label found, return the raw response or try to match text
+            for choice in choices:
+                if choice.lower() in response.lower():
+                    return choice
+
+        return response.strip()
+
+    def _contains_math_expression(self, query: str) -> bool:
+        """Check if query contains mathematical expressions"""
+        import re
+        # Look for numbers with operators
+        math_pattern = r'\d+\s*[\+\-\*\/×÷]\s*\d+'
+        return bool(re.search(math_pattern, query))
+
+    def _is_word_problem(self, query: str) -> bool:
+        """Check if query is a word problem (natural language math)"""
+        query_lower = query.lower()
+
+        # Word problems typically have these characteristics:
+        word_problem_indicators = [
+            # Multiple quantities mentioned
+            len(re.findall(r'\d+', query)) >= 2,
+            # Story-like elements
+            any(word in query_lower for word in ['has', 'have', 'gives', 'gave', 'takes', 'took', 'buys', 'bought', 'sells', 'sold']),
+            # Question words
+            any(word in query_lower for word in ['how many', 'how much', 'what is the total', 'what is left']),
+            # Entities (people, objects)
+            any(word in query_lower for word in ['john', 'mary', 'sarah', 'apples', 'oranges', 'balls', 'books', 'dollars'])
+        ]
+
+        # Must have at least 2 indicators to be considered a word problem
+        return sum(word_problem_indicators) >= 2
+
+    def _solve_word_problem(self, query: str) -> Optional[Dict]:
+        """Solve a word problem using NLP parsing"""
+        try:
+            # Parse the word problem
+            parsed_problem = self.word_problem_parser.parse_word_problem(query)
+
+            # Solve the parsed problem
+            solution = self.word_problem_parser.solve_word_problem(parsed_problem)
+
+            if solution and solution.get('confidence', 0) > 0.3:
+                return {
+                    'method': 'word_problem_nlp',
+                    'result': solution,
+                    'confidence': solution.get('confidence', 0.5)
+                }
+
+            return None
+
+        except Exception as e:
+            print(f"Word problem parsing failed: {e}")
+            return None
+
+    def enhanced_reasoning(self, query: str, context: Optional[Dict] = None) -> Optional[Dict]:
+        """
+        Enhanced reasoning that addresses benchmark weaknesses.
+        """
+        query_lower = query.lower()
+
+        # Word problem solving - check if this is a natural language math problem
+        if self._is_word_problem(query):
+            try:
+                result = self._solve_word_problem(query)
+                if result and result.get('confidence', 0) > 0.4:
+                    return result
+            except Exception as e:
+                print(f"Word problem solving failed: {e}")
+
+        # Mathematical problem solving - expanded keywords
+        math_keywords = ['solve', 'calculate', 'compute', 'equation', 'derivative', 'integral',
+                        'what is', 'how much', 'find', 'determine', 'evaluate']
+        if any(keyword in query_lower for keyword in math_keywords) or self._contains_math_expression(query):
+            try:
+                result = self.mathematical_reasoner.solve_equation(query)
+                if result.get('confidence', 0) > 0.5:  # Only return if reasonably confident
+                    return {
+                        'method': 'enhanced_mathematical',
+                        'result': result,
+                        'confidence': result.get('confidence', 0.5)
+                    }
+            except Exception as e:
+                print(f"Enhanced mathematical reasoning failed: {e}")
+
+        # Numerical computation with precision - expanded keywords
+        numerical_keywords = ['precise', 'accuracy', 'decimal', 'fraction', 'numerical',
+                             'what is', 'how much', 'calculate', 'compute', 'evaluate']
+        if any(keyword in query_lower for keyword in numerical_keywords) or self._contains_math_expression(query):
+            try:
+                result = self.numerical_reasoner.solve_system([query])
+                if result.get('converged', False) or 'solution' in str(result.get('solution', '')):
+                    return {
+                        'method': 'enhanced_numerical',
+                        'result': result,
+                        'confidence': result.get('confidence', 0.5)
+                    }
+            except Exception as e:
+                print(f"Enhanced numerical reasoning failed: {e}")
+
+        # Try basic arithmetic evaluation for simple expressions
+        if self._contains_math_expression(query):
+            try:
+                # Extract and evaluate simple arithmetic
+                import re
+                expr_match = re.search(r'(\d+\s*[\+\-\*\/]\s*\d+)', query)
+                if expr_match:
+                    expr = expr_match.group(1).replace(' ', '')
+                    result = eval(expr)
+                    return {
+                        'method': 'basic_arithmetic',
+                        'result': {'solution': str(result), 'confidence': 0.8},
+                        'confidence': 0.8
+                    }
+            except:
+                pass
+
+        # Visual/spatial reasoning
+        if any(keyword in query_lower for keyword in ['visual', 'spatial', 'grid', 'pattern', 'transform']):
+            try:
+                visual_data = context.get('visual_data') if context else None
+                result = self.visual_reasoner.solve_visual_problem(visual_data or {})
+                return {
+                    'method': 'enhanced_visual',
+                    'result': result,
+                    'confidence': result.get('confidence', 0.5)
+                }
+            except Exception as e:
+                print(f"Enhanced visual reasoning failed: {e}")
+
+        # Abstract reasoning for novel patterns
+        if any(keyword in query_lower for keyword in ['pattern', 'abstract', 'reasoning', 'inference']):
+            try:
+                context_data = context.get('examples', []) if context else []
+                result = self.numerical_reasoner.abstract_reasoner.apply_abstract_reasoning(
+                    {'description': query}, context_data
+                )
+                return {
+                    'method': 'enhanced_abstract',
+                    'result': result,
+                    'confidence': result.get('confidence', 0.5)
+                }
+            except Exception as e:
+                print(f"Enhanced abstract reasoning failed: {e}")
+
+        # Fall back to regular reasoning
+        return None
+
+
+    def record_action_result(self, action: Dict, result: str):
+        """Records an action and its result into the mission history."""
+        self.mission_history.append(f"ACTION: {json.dumps(action)}")
+        self.mission_history.append(f"OBSERVATION: {result}")
+
     def reason_about_scenario(self, context: Dict[str, Any], mission_params: Dict[str, Any], memory_bank: list = None) -> Dict[str, Any]:
-        """Uses the LLM bridge with Level 10 Persona and Governance Tools."""
+        """Uses enhanced reasoning for specific problem types, falls back to LLM."""
+        query = mission_params.get("goal", self.current_goal)
+
+        # First try enhanced reasoning for benchmark weaknesses
+        enhanced_result = self.enhanced_reasoning(query, context)
+        if enhanced_result and enhanced_result['result'].get('confidence', 0) > 0.6:
+            # Use enhanced reasoning result
+            result_data = enhanced_result['result']
+            if enhanced_result['method'] == 'enhanced_mathematical':
+                solution = result_data.get('solution', {})
+                return {
+                    "llm_insight": f"Mathematical solution: {solution.get('solution', 'No solution found')}",
+                    "method": "enhanced_mathematical",
+                    "confidence": solution.get('confidence', 0.5),
+                    "mission_complete": True,
+                    "current_goal": query
+                }
+            elif enhanced_result['method'] == 'enhanced_visual':
+                visual_result = result_data.get('result', {})
+                return {
+                    "llm_insight": f"Visual pattern solution: {visual_result.get('output', 'No solution found')}",
+                    "method": "enhanced_visual",
+                    "confidence": visual_result.get('confidence', 0.5),
+                    "mission_complete": True,
+                    "current_goal": query
+                }
+
+        # Fall back to LLM reasoning
         if not self.llm_bridge:
             return {"llm_insight": "LLM Reasoning disabled.", "mission_complete": False, "current_goal": self.current_goal}
 
-        mission_goal = mission_params.get("goal", self.current_goal)
-
-        # 1. APPLY PROMPT MASTERWORKS (CRYSTALLINE INTENT)
-        # Crystallize the intent before processing
-        if self.prompt_masterworks and hasattr(self.prompt_masterworks, 'crystalline_intent'):
-            print(f"💎 Crystallizing intent for goal: {mission_goal[:50]}...")
-            crystallized_goal = self.prompt_masterworks.crystalline_intent(mission_goal)
-        else:
-            crystallized_goal = mission_goal
-
-        # 1b. CHRONO-ADAPTATION & PREDICTION (Temporal Bridges)
-        if self.prompt_masterworks:
-            # If goal involves time or future
-            time_keywords = ["future", "long-term", "plan", "year", "month", "prediction", "forecast"]
-            if any(kw in mission_goal.lower() for kw in time_keywords):
-                if hasattr(self.prompt_masterworks, 'chrono_prompt'):
-                    print("⏱️ Applying CHRONO-PROMPT for time-adaptive reasoning...")
-                    chrono_info = self.prompt_masterworks.chrono_prompt(mission_goal, "Standard AGI development trajectory")
-                    crystallized_goal += f"\n\n--- CHRONO-ADAPTATION CONTEXT ---\n{chrono_info}"
-                
-                if hasattr(self.prompt_masterworks, 'prediction_oracle'):
-                    print("🔮 Consulting PREDICTION ORACLE for probabilistic futures...")
-                    prediction_info = self.prompt_masterworks.prediction_oracle(mission_goal)
-                    crystallized_goal += f"\n\n--- PREDICTION ORACLE ANALYSIS ---\n{prediction_info}"
-
-        # 2. RAG: Retrieve context from PersistentMemory and Pinecone
+        # 1. RAG: Retrieve context from PersistentMemory and Pinecone
         retrieved_context = ""
-        query = mission_goal # Use original goal for search consistency
+        query = mission_params.get("goal", self.current_goal)
         
         # Local Semantic Memory
         if self.gov_mem:
@@ -144,9 +339,10 @@ class ReasoningOrchestrator:
             pass # Pinecone fallback
 
 
-        # 3. Level 10 Unified System Prompt (Persona + Governance)
-        # Inject dynamic tool schemas from MCP registry
-        tool_schemas = json.dumps(ToolRegistry.get_schemas(), indent=2)
+        # 2. Level 10 Unified System Prompt (Persona + Governance)
+        # Inject dynamic tool schemas from MCP registry (using RAG for discovery)
+        mission_goal = mission_params.get("goal", self.current_goal)
+        tool_schemas = json.dumps(ToolRegistry.get_relevant_schemas(mission_goal), indent=2)
         
         # Load Protected Identity
         identity_path = os.path.join(os.path.dirname(__file__), "IDENTITY.txt")
@@ -155,91 +351,64 @@ class ReasoningOrchestrator:
             with open(identity_path, "r") as f:
                 identity = f.read()
 
-        # APPLY ECHO PRIME / RESONANCE to the system prompt
-        system_base = f"{identity}\n{retrieved_context}\n"
-        
-        if self.prompt_masterworks:
-            if hasattr(self.prompt_masterworks, 'echo_prime'):
-                print("🧠 Activating ECHO PRIME consciousness amplifier...")
-                system_base += f"\n{self.prompt_masterworks.echo_prime(mission_goal)}\n"
-            elif hasattr(self.prompt_masterworks, 'echo_resonance'):
-                print("📡 Activating ECHO RESONANCE distributed thinking...")
-                system_base += f"\n{self.prompt_masterworks.echo_resonance(mission_goal)}\n"
-
         level_10_prompt = (
-            f"{system_base}"
+            f"{identity}\n"
+            f"{retrieved_context}"
             "\nOPERATIONAL DIRECTIVES:\n"
             "1. GOVERNANCE: Verify all strong claims using FactChecker logic. If unsure, express uncertainty.\n"
             "2. TOOL USAGE: Call tools using: ACTION: {'tool': 'tool_name', 'args': {...}}\n"
             f"AVAILABLE TOOLS (JSON SCHEMAS):\n{tool_schemas}\n"
         )
-
+        
+        # Load latest plan for context
+        self.task_manager.load_latest_plan()
+        current_plan = self.task_manager.get_plan_view()
+        if "No active plan found" not in current_plan and "Objective:" in current_plan:
+             level_10_prompt += f"\n--- CURRENT PLAN ---\n{current_plan}\n"
+         
+        mission_goal = mission_params.get("goal", self.current_goal)
         history_str = "\n".join(self.mission_history[-3:])
         
         # Image Handling
         image_path = context.get("image_path")
         images = [image_path] if image_path and os.path.exists(image_path) else None
         
-        def json_serializable_fallback(obj):
-            if isinstance(obj, np.ndarray):
-                return obj.tolist()
-            if isinstance(obj, (np.float32, np.float64)):
-                return float(obj)
-            if isinstance(obj, (np.int32, np.int64)):
-                return int(obj)
-            return str(obj)
+        is_math = self._contains_math_expression(mission_goal) or self._is_word_problem(mission_goal)
+        
+        cot_instructions = ""
+        if is_math:
+            cot_instructions = (
+                "\nTHINKING STEP-BY-STEP (Chain-of-Thought):\n"
+                "1. EXTRACT: First, list ALL quantities, constraints, and relationships given in the problem.\n"
+                "2. PLAN: Identify what the question is asking for.\n"
+                "3. SOLVE: Perform calculations for each step, showing your work.\n"
+                "4. VERIFY: Double-check your answer by substituting back into the original problem.\n"
+                "5. FORMAT: Your final answer MUST be exactly: #### <number>\n"
+                "   (Use only the final numeric answer after ####, no units or text)\n"
+            )
 
         prompt = (
-            f"--- CRYSTALLIZED MISSION GOAL ---\n{crystallized_goal}\n\n"
+            f"--- CURRENT MISSION GOAL ---\n{mission_goal}\n\n"
+            f"{cot_instructions}"
             f"--- MISSION HISTORY ---\n{history_str}\n\n"
-            f"--- LIVE SENSORY CONTEXT ---\n{json.dumps(context, indent=2, default=json_serializable_fallback)}\n\n"
+            f"--- LIVE SENSORY CONTEXT ---\n{json.dumps(context, indent=2)}\n\n"
             "Analyze the situation. If an image is provided, describe it and integrate it into your reasoning. "
             "Speak to Joshua as a friend. If the goal is achieved, include 'MISSION_STATUS: ACHIEVED'."
         )
-
-        # APPLY ECHO VISION if image is present
-        if images and self.prompt_masterworks and hasattr(self.prompt_masterworks, 'echo_vision'):
-            print("👁️ Activating ECHO VISION pattern recognition...")
-            prompt += f"\n\n--- ECHO VISION ANALYSIS PROTOCOL ---\n{self.prompt_masterworks.echo_vision('Visual Sensory Input')}\n"
 
         # Use vision model if image is present, otherwise standard model
         bridge = self.vision_bridge if images else self.llm_bridge
         response = bridge.query(prompt, system=level_10_prompt, images=images)
         
-        # 4. METACOGNITIVE REFLECTION (Self-Correction Loop)
+        # --- METACOGNITIVE REFLECTION (Self-Correction Loop) ---
         if self.critic and not mission_params.get("_internal_reflection"):
             critique = self.critic.critique(mission_goal, response)
-            
-            # Apply RECURSIVE MIRROR to understand the reflection itself
-            if self.prompt_masterworks and hasattr(self.prompt_masterworks, 'recursive_mirror'):
-                print("🪞 Activating RECURSIVE MIRROR for metacognitive depth...")
-                mirror_analysis = self.prompt_masterworks.recursive_mirror(response[:100] + "...")
-                # We can inject this into the critique logic if needed, or just log it
-                print(f"   ✓ Metacognitive mirror analysis complete")
-
             if not critique.get("valid", True):
                 print(f" [🔍 REFLECTION]: Correcting thought trace... ({critique.get('errors')[0]})")
-                
-                # APPLY PARALLEL PATHWAYS for correction if things are complex
-                if self.prompt_masterworks and hasattr(self.prompt_masterworks, 'parallel_pathways'):
-                    print("🚦 Complex problem detected - Activating PARALLEL PATHWAYS...")
-                    pathways = self.prompt_masterworks.parallel_pathways(mission_goal)
-                    refined_prompt = prompt + f"\n\n[INTERNAL CRITIQUE]: {critique.get('suggested_correction')}\n\n[PARALLEL PATHWAYS ANALYSIS]:\n{pathways}\n\nPlease provide a corrected final response."
-                else:
-                    refined_prompt = prompt + f"\n\n[INTERNAL CRITIQUE]: {critique.get('suggested_correction')}\nPlease provide a corrected final response."
-                
+                refined_prompt = prompt + f"\n\n[INTERNAL CRITIQUE]: {critique.get('suggested_correction')}\nPlease provide a corrected final response."
                 # Mark as internal to prevent infinite recursion
                 mission_params["_internal_reflection"] = True
                 response = bridge.query(refined_prompt, system=level_10_prompt, images=images)
-
-        # 5. TEMPORAL ANCHORING
-        # Anchor the response before finishing
-        if self.prompt_masterworks and hasattr(self.prompt_masterworks, 'temporal_anchor'):
-            print("⚓ Applying TEMPORAL ANCHORS to response...")
-            # We don't want to double-print the response, so we just add the anchor info
-            anchor_info = self.prompt_masterworks.temporal_anchor(response[:100] + "...", mission_goal)
-            # In a real system, we'd store this metadata, but for now we append it
-            response += f"\n\n--- TEMPORAL ANCHOR METADATA ---\n{anchor_info}"
 
         mission_achieved = "MISSION_STATUS: ACHIEVED" in response
         self.mission_history.append(f"Thought: {response[:100]}...")

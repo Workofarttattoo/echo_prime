@@ -76,16 +76,23 @@ def test_basic_functionality():
         from core import HierarchicalGenerativeModel, FreeEnergyEngine
         import numpy as np
 
+        lightweight_mode = os.environ.get("ECH0_VERIFY_LIGHTWEIGHT", "1").lower() not in (
+            "0",
+            "false",
+            "no",
+        )
+
         # Create model
-        model = HierarchicalGenerativeModel()
+        model = HierarchicalGenerativeModel(lightweight=lightweight_mode)
         fe_engine = FreeEnergyEngine(model)
 
         # Test prediction
-        model.levels[0].compute_error(np.random.randn(1000000))  # Match sensory dimension
-        fe_engine.optimize(iterations=2)
-        fe = fe_engine.calculate_free_energy()
+        sensory_dim = model.levels[0].input_dim
+        test_input = np.random.randn(sensory_dim)
+        fe = fe_engine.optimize(sensory_input=test_input, iterations=1)
 
-        print(f"✓ Core engine functional (FE: {fe:.2f})")
+        profile_label = "lite" if lightweight_mode else "full"
+        print(f"✓ Core engine functional (FE: {fe:.2f}, profile: {profile_label})")
         return True
     except Exception as e:
         print(f"❌ Core engine test failed: {e}")

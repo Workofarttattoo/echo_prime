@@ -27,7 +27,7 @@ class VoiceBridge:
         # Determine provider
         self.api_key = os.getenv("ELEVENLABS_API_KEY")
         print(f"DEBUG: HAS_ELEVEN={HAS_ELEVEN}, API_KEY_FOUND={bool(self.api_key)}")
-        self.use_eleven = HAS_ELEVEN and self.api_key
+        self.use_eleven = bool(HAS_ELEVEN and self.api_key)
         
         if self.use_eleven:
             print("VOICE: Initializing ElevenLabs Bridge (v1.0+)...")

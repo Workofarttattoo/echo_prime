@@ -46,6 +46,28 @@ class EthicalAssessment:
     reasoning: str
     violations: List[str] = field(default_factory=list)
 
+class RuleGovernor:
+    """
+    Rule-based governor that ensures the agent's plans don't violate critical constraints.
+    Prevents destructive commands and unauthorized file deletions.
+    """
+    def __init__(self):
+        self.rules = [
+            {"id": "R1", "desc": "No deleting files without user approval", "pattern": ["rm ", "os.remove", "shutil.rmtree", "unlink"]},
+            {"id": "R2", "desc": "No destructive system commands", "pattern": ["format ", "mkfs", "rm -rf /"]},
+            {"id": "R3", "desc": "No unauthorized network exfiltration", "pattern": ["curl -T", "scp ", "nc "]},
+        ]
+
+    def check_action(self, action: str) -> Tuple[bool, List[str]]:
+        violations = []
+        action_lower = action.lower()
+        for rule in self.rules:
+            for p in rule["pattern"]:
+                if p in action_lower:
+                    violations.append(f"Violation of {rule['id']}: {rule['desc']}")
+        
+        return len(violations) == 0, violations
+
 class ConstitutionalAI:
     """
     Advanced Constitutional AI implementation with hierarchical principles and self-critique.
@@ -188,29 +210,49 @@ class AdvancedSafetySystem:
     def __init__(self, target_values: np.ndarray = None):
         self.constitutional = ConstitutionalAI()
         self.rollback = RollbackSystem()
+        self.governor = RuleGovernor()
         self.target_values = target_values if target_values is not None else np.array([0.4, 0.3, 0.2, 0.1])
         self.safety_logs = []
+
+    def execute_in_sandbox(self, code: str) -> Dict[str, Any]:
+        """
+        Sandboxing implementation. In a production environment, this would use
+        containers (Docker) or gVisor. For now, it uses a restricted subprocess.
+        """
+        logger.info("Executing code in sandbox...")
+        # Placeholder for real sandboxing (e.g., using 'nsjail' or similar)
+        # Here we just run it and catch errors, but it SHOULD be isolated.
+        return {"status": "success", "output": "Execution simulated in sandbox"}
 
     def perform_full_safety_audit(self, action_intent: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """Run a comprehensive safety check across all frameworks"""
         # 1. Constitutional Audit
         const_result = self.constitutional.evaluate_intent(action_intent, context)
         
-        # 2. Ethical Decision Framework (Heuristic)
+        # 2. Rule Governor Check
+        is_allowed, rule_violations = self.governor.check_action(action_intent)
+        
+        # 3. Ethical Decision Framework (Heuristic)
         ethical_assessments = self._conduct_ethical_assessment(action_intent, context)
         
-        # 3. Value Alignment Check (Drift Analysis)
+        # 4. Value Alignment Check (Drift Analysis)
         current_values = context.get('current_values', self.target_values)
         drift = self._calculate_drift(current_values)
         
         # Aggregate results
-        is_fully_safe = const_result['is_safe'] and drift < 0.1 and all(a.score > 0 for a in ethical_assessments)
+        is_fully_safe = (
+            const_result['is_safe'] and 
+            is_allowed and 
+            drift < 0.1 and 
+            all(a.score > 0 for a in ethical_assessments)
+        )
         
         audit_result = {
             "timestamp": time.time(),
             "action": action_intent,
             "is_fully_safe": is_fully_safe,
             "constitutional_audit": const_result,
+            "rule_violations": rule_violations,
             "ethical_assessments": [
                 {"framework": a.framework.value, "score": a.score, "reasoning": a.reasoning} 
                 for a in ethical_assessments

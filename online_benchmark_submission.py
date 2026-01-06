@@ -334,17 +334,17 @@ Email: 7252242617@vtext.com
         with open(press_file, 'w') as f:
             f.write(press_release)
 
-        print("
-📄 Press release generated:"        print(f"   {press_file}")
+        print("\n📄 Press release generated:")
+        print(f"   {press_file}")
 
         # Summary
         successful_submissions = sum(1 for result in submission_results.values() if result)
         total_submissions = len(submission_results)
 
-        print("
-🎉 Submission Summary:"        print(f"   ✅ Successful: {successful_submissions}/{total_submissions}")
-        print("   📁 Submission files saved in: benchmark_results/"
-        print("   📰 Press release ready for distribution"
+        print("\n🎉 Submission Summary:")
+        print(f"   ✅ Successful: {successful_submissions}/{total_submissions}")
+        print("   📁 Submission files saved in: benchmark_results/")
+        print("   📰 Press release ready for distribution")
 
         return {
             "benchmark": benchmark_name,

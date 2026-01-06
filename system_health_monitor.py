@@ -264,6 +264,30 @@ class SystemHealthMonitor:
             'estimated_recovery_time': self._estimate_recovery_time(degradation_plan)
         }
 
+    def _analyze_system_health(self):
+        """Analyze system-wide health and detect patterns"""
+        # Calculate overall system score
+        scores = [c.health_score for c in self.component_health.values()]
+        if scores:
+            avg_score = sum(scores) / len(scores)
+            
+            # Simple health state transition
+            if avg_score > 90:
+                self.health_status = HealthStatus.HEALTHY
+            elif avg_score > 60:
+                self.health_status = HealthStatus.WARNING
+            else:
+                self.health_status = HealthStatus.CRITICAL
+                
+        # Look for resource bottlenecks
+        mem_usage = self.component_health.get('memory', ComponentHealth('memory', ComponentStatus.OPERATIONAL, 100, datetime.now())).metrics.get('usage_percent', 0)
+        if mem_usage > 90:
+            self._raise_alert('system', 'high', f"Critical memory pressure: {mem_usage:.1f}%")
+            
+        cpu_usage = self.component_health.get('cpu', ComponentHealth('cpu', ComponentStatus.OPERATIONAL, 100, datetime.now())).metrics.get('usage_percent', 0)
+        if cpu_usage > 95:
+            self._raise_alert('system', 'high', f"Critical CPU load: {cpu_usage:.1f}%")
+
     def _monitoring_loop(self):
         """Main health monitoring loop"""
         while self.is_monitoring:

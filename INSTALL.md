@@ -245,4 +245,6 @@ If you encounter issues:
 4. Verify Ollama is running
 5. Check microphone permissions
 
+Join our community for support: [**Discord Server**](https://discord.gg/2bsWShXN)
+
 Contact: Joshua Hendricks Cole - 7252242617
