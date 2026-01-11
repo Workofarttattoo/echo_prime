@@ -1,17 +1,3 @@
-{
-  "name": "Mathlib4 dev container",
-
-  "image": "leanprovercommunity/gitpod4",
-
-  "onCreateCommand": "lake exe cache get!",
-
-  "hostRequirements": {
-     "cpus": 4
-  },
-
-  "customizations": {
-    "vscode" : {
-      "extensions" : [ "leanprover.lean4" ]
-    }
-  }
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:575c6fc693e8afc4f9d38a96fecbf661b31e4b53c0fce137e98018c7c4df0ca3
+size 267

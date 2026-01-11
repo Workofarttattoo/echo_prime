@@ -1,1 +1,3 @@
-{"train": [{"input": [[0, 0, 0], [1, 0, 0], [0, 1, 0]], "output": [[1, 1]]}, {"input": [[0, 2, 0], [2, 0, 0], [0, 2, 0]], "output": [[2, 2, 2]]}, {"input": [[0, 7, 0], [0, 0, 0], [0, 0, 0]], "output": [[7]]}, {"input": [[0, 8, 0], [8, 8, 0], [8, 0, 0]], "output": [[8, 8, 8, 8]]}], "test": [{"input": [[4, 4, 0], [4, 0, 4], [0, 0, 4]], "output": [[4, 4, 4, 4, 4]]}]}
+version https://git-lfs.github.com/spec/v1
+oid sha256:8ac92452dbb30cd080144dfe375ecfaa5a1e262c552ebbb27f0b4a88e3792c7f
+size 366

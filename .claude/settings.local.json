@@ -1,16 +1,3 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(find:*)",
-      "Bash(./venv/bin/pip:*)",
-      "Bash(rm:*)",
-      "Bash(python3:*)",
-      "Bash(./venv/bin/python:*)",
-      "Bash(curl:*)",
-      "Bash(chmod:*)",
-      "Bash(timeout 5 ./venv/bin/python:*)"
-    ],
-    "deny": [],
-    "ask": []
-  }
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:1b8000f7fe286b3badc95caf704f509a078523e968ff49837a09875985858fe1
+size 302

@@ -1,4 +1,3 @@
-{
-  "image": "mcr.microsoft.com/devcontainers/universal:2",
-  "features": {}
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:3eaf033fb30213153f6fc5bd05169e1dffecbe7ec45e75bbc87b70a39ae8279f
+size 79
