@@ -1,0 +1,23 @@
+absl-py
+coverage
+flax
+grpcio
+jax
+jaxlib
+numpy
+portpicker
+prometheus-client
+pytest
+seqio
+tiktoken
+blobfile
+parameterized
+shortuuid
+fastapi
+uvicorn
+sympy
+nltk
+evaluate
+transformers
+# For profiling
+tensorboard-plugin-profile

@@ -1,0 +1,10 @@
+sphinx
+sphinxcontrib-bibtex
+sphinxcontrib-katex
+sphinx-autodoc-typehints
+# See https://github.com/executablebooks/sphinx-book-theme/issues/719.
+sphinx-book-theme==0.3.3
+
+# Packages used for notebook execution
+nbsphinx
+ipykernel

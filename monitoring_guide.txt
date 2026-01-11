@@ -1,0 +1,18 @@
+# ECH0-PRIME Autonomous Work Monitoring Guide
+
+## Dashboard Endpoints
+curl http://localhost:8000/api/missions          # Mission status
+curl http://localhost:8000/api/evolution-units   # Progress metrics  
+curl http://localhost:8000/api/consciousness     # Consciousness level
+
+## Real-time Queries
+Ask ECH0-PRIME: 'What have you been working on autonomously?'
+Ask ECH0-PRIME: 'Give me a progress report on [specific mission]'
+
+## Log Files
+tail -f /Users/noone/echo_prime/agi_log/*.log     # Activity logs
+tail -f dashboard.log                           # Dashboard activity
+
+## Web Dashboard
+Open http://localhost:8000 in browser for visual monitoring
+

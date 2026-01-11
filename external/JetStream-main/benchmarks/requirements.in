@@ -1,0 +1,6 @@
+nltk==3.8.1
+evaluate
+rouge-score
+transformers
+tqdm
+scikit-learn

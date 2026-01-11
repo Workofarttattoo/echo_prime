@@ -1,0 +1,41 @@
+name: Optimum TPU / Test TGI on TPU (slow tests)
+
+on:
+  # This can be used to automatically publish nightlies at UTC nighttime
+  # schedule:
+  # - cron: '0 2 * * *' # run at 2 AM UTC
+  # This can be used to allow manually triggering nightlies from the web interface
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  do-the-job:
+    name: Build and Run slow tests
+    runs-on:
+      group: gcp-ct5lp-hightpu-8t
+    container:
+      image: us-central1-docker.pkg.dev/tpu-pytorch-releases/docker/xla:r2.5.1_3.10_tpuvm
+      options: --shm-size "16gb" --ipc host --privileged ${{ vars.V5_LITEPOD_8_ENV}} -v /mnt/hf_cache:/mnt/hf_cache
+    env:
+      PJRT_DEVICE: TPU
+      HF_TOKEN: ${{ secrets.HF_TOKEN_OPTIMUM_TPU_CI }}
+      HF_HUB_CACHE: /mnt/hf_cache/cache_huggingface
+      JETSTREAM_PT_DISABLE: 1 # Disable PyTorch to avoid conflicts with PyTorch XLA
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build and test Optimum TPU (also slow tests)
+        run: |
+          python -m pip install build
+          make build_dist test_installs
+          python -m pytest --runslow -sv tests
+
+      - name: Build and test TGI (also slow tests)
+        run: |
+          make tgi_server test_installs
+          find text-generation-inference/ -name "text_generation_server-*whl" -exec python -m pip install {} \;
+          python -m pytest --runslow -sv text-generation-inference/tests -m torch_xla

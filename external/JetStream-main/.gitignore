@@ -1,0 +1,14 @@
+__pycache__
+.env*
+build/
+dist/
+google_jetstream.egg-info/
+.coverage
+
+# local folders
+data/
+logs/
+tmp/
+venv/
+.vscode/
+.idea/

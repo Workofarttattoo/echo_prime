@@ -1,0 +1,241 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "flax"
+requires-python = ">=3.11"
+description = "Flax: A neural network library for JAX designed for flexibility"
+keywords = []
+authors = [
+    {name = "Flax team", email = "flax-dev@google.com"},
+]
+dependencies = [
+    "numpy>=1.23.2; python_version>='3.11'",
+    "numpy>=1.26.0; python_version>='3.12'",
+    # keep in sync with jax-version in .github/workflows/build.yml
+    "jax>=0.8.1",
+    "msgpack",
+    "optax",
+    "orbax-checkpoint",
+    "tensorstore",
+    "rich>=11.1",
+    "typing_extensions>=4.2",
+    "PyYAML>=5.4.1",
+    "treescope>=0.1.7",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dynamic = ["version", "readme"]
+
+[project.optional-dependencies]
+testing = [
+    "clu",
+    "clu<=0.0.9; python_version<'3.10'",
+    "einops",
+    "gymnasium[atari]",
+    "jaxlib",
+    "jaxtyping",
+    "jraph>=0.0.6dev0",
+    "ml-collections",
+    "mypy",
+    "opencv-python",
+    # Set protobuf version for python 3.13+ to prevent error in
+    # examples/mnist/train_test.py::TrainTest::test_train_and_evaluate
+    # Failed to construct dataset "mnist", builder_kwargs "{}": Value out of range: 11594722
+    "protobuf<6; python_version>='3.13'",
+    "pytest",
+    "pytest-cov",
+    "pytest-custom_exit_code",
+    "pytest-xdist",
+    "pytype",
+    # WMT/LM1B examples
+    "sentencepiece==0.2.0",  # Segfault bug in 0.2.1
+    "tensorflow_text>=2.11.0; platform_system!='Darwin' and python_version < '3.13'",
+    "tensorflow_datasets",
+    "tensorflow>=2.12.0; python_version<'3.13'", # to fix Numpy np.bool8 deprecation error
+    "tensorflow>=2.20.0; python_version>='3.13'",
+    # Temporary fix for https://github.com/google/flax/issues/5143
+    "keras<3.13",
+    "torch",
+    "treescope>=0.1.1; python_version>='3.10'",
+    "cloudpickle>=3.0.0",
+    "ale-py>=0.10.2",
+]
+docs = [
+    "sphinx==6.2.1",
+    "sphinx-book-theme",
+    "Pygments>=2.6.1",
+    "ipykernel",
+    "myst_nb",
+    "nbstripout",
+    "recommonmark",
+    "ipython_genutils",
+    "sphinx-design",
+    "jupytext==1.13.8",
+    "dm-haiku>=0.0.14",
+    "docutils",
+    # The next packages are for notebooks.
+    "matplotlib",
+    "scikit-learn",
+    # The next packages are used in testcode blocks.
+    "ml_collections",
+    # notebooks
+    "einops",
+    "kagglehub>=0.3.3",
+    "ipywidgets>=8.1.5",
+]
+dev = [
+    "nanobind>=2.5.0",
+    "pre-commit>=3.8.0",
+    "scikit-build-core[pyproject]>=0.11.0",
+]
+
+[project.urls]
+homepage = "https://github.com/google/flax"
+
+[tool.setuptools.dynamic]
+readme = {file = ["README.md"], content-type = "text/markdown"}
+version = {attr = "flax.version.__version__"}
+
+[tool.setuptools.packages.find]
+include = ["flax*"]
+
+[tool.setuptools.package-data]
+flax = ["*py.typed"]
+
+[tool.yapf]
+based_on_style = "yapf"
+
+[tool.pytype]
+# TODO(levskaya): figure out why we get pyi-error from flax's root __init__.py
+# could be a pytype bug.
+disable = "pyi-error"
+
+[tool.mypy]
+show_error_codes = true
+no_implicit_optional = true
+disable_error_code = "attr-defined"
+
+[[tool.mypy.overrides]]
+module = [
+    "tensorflow.*",
+    "tensorboard.*",
+    "absl.*",
+    "jax.*",
+    "rich.*",
+    "flax.*",
+    "jaxlib.cuda.*",
+    "jaxlib.cpu.*",
+    "msgpack",
+    "numpy.*",
+    "optax.*",
+    "orbax.*",
+    "opt_einsum.*",
+    "scipy.*",
+    "libtpu.*",
+    "jaxlib.mlir.*",
+    "yaml",
+]
+ignore_missing_imports = true
+disable_error_code = "annotation-unchecked"
+# exclude nnx examples
+[[tool.mypy.overrides]]
+module = "flax.nnx.examples.*"
+ignore_errors = true
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    # By default error out on any warnings.
+    "error",
+    # Jax warning when no gpu/tpu found.
+	"ignore:No GPU/TPU found, falling back to CPU.*:UserWarning",
+    # traverse_util.Traversal will be removed soon.
+    "ignore:`flax.traverse_util.Traversal` will be deprecated.*:DeprecationWarning",
+    # Deprecated legacy checkpoint - just want to keep the tests running for a while
+    "ignore:Flax Checkpointing will soon be deprecated in favor of Orbax.*:DeprecationWarning",
+    # DeprecationWarning: The inputs_kv arg will be deprecated soon. Use inputs_k and inputs_v instead.
+    "ignore:.*The inputs_kv arg will be deprecated soon. Use inputs_k and inputs_v instead.*:DeprecationWarning",
+    # DeprecationWarning: the function signature of MultiHeadDotProductAttention's `__call__` method has changed
+    "ignore:.*the function signature of MultiHeadDotProductAttention's `__call__` method has changed.*:DeprecationWarning",
+    # DeprecationWarning: ml_dtypes.float8_e4m3b11 is deprecated.
+    "ignore:.*ml_dtypes.float8_e4m3b11 is deprecated.*:DeprecationWarning",
+    # pytest-cov uses a deprecated feature of pytest-xdist. (2023-11-06)
+    "ignore:The --rsyncdir command line argument and rsyncdirs config variable are deprecated.:DeprecationWarning",
+    # DeprecationWarning: jax.random.KeyArray is deprecated.
+    "ignore:.*jax.random.KeyArray is deprecated.*:DeprecationWarning",
+    # DeprecationWarning: jax.core.Shape is deprecated.
+    "ignore:.*jax.core.Shape is deprecated.*:DeprecationWarning",
+    # DeprecationWarning: pkg_resources is deprecated as an API.
+    "ignore:.*pkg_resources is deprecated as an API.*:DeprecationWarning",
+    # DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('google')`.
+    "ignore:.*Deprecated call to.*pkg_resources.declare_namespace.*:DeprecationWarning",
+    # jax.xla_computation is deprecated but TF still uses it.
+    "ignore:.*jax.xla_computation is deprecated.*:DeprecationWarning",
+    # Orbax warnings inside deprecated `flax.training` package.
+    "ignore:.*Couldn't find sharding info under RestoreArgs.*:UserWarning",
+    # RuntimeWarning: invalid value encountered in cast
+    "ignore:.*invalid value encountered in cast.*:RuntimeWarning",
+    # RuntimeWarning: divide by zero encountered in equal/not_equal
+    "ignore:.*divide by zero encountered in.*:RuntimeWarning",
+    # DeprecationWarning: numpy.core is deprecated
+    "ignore:.*numpy.core is deprecated.*:DeprecationWarning",
+    # DeprecationWarning: shape requires ndarray or scalar arguments
+    "ignore:.*shape requires ndarray or scalar arguments.*:DeprecationWarning",
+    # UserWarning: Sharding info not provided when restoring
+    "ignore:.*Sharding info not provided when restoring.*:UserWarning",
+    # UserWarning: pkg_resources is deprecated as an API.
+    "ignore:.*pkg_resources is deprecated as an API.*:UserWarning",
+    # DeprecationWarning: 'Data' is deprecated, please replace:
+    "ignore:.*[Data|Static]' is deprecated, please replace.*:DeprecationWarning",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "@abc.abstractmethod",
+    "raise NotImplementedError",
+]
+
+[tool.pyink]
+pyink-indentation = 2
+pyink-use-majority-quotes = true
+line-length = 80
+preview = true
+
+[tool.ruff]
+# Exclude a variety of commonly ignored directories.
+exclude = [
+  "__init__.py",
+  "activation.py",
+  "partitioning.py",
+  "flax/core/variables.py",
+  "examples/",
+]
+
+line-length = 80
+indent-width = 2
+
+[tool.ruff.lint]
+# Enable Pyflakes (`F`) and a subset of the pycodestyle (`E`)  codes by default.
+select = ["F401"]
+ignore = []
+# Allow fix for all enabled rules (when `--fix`) is provided.
+# Full list of rules: https://docs.astral.sh/ruff/rules/
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.format]
+indent-style = "space"
+quote-style = "single"
+
+
+[tool.uv]
+# Ignore uv.lock and always upgrade the package to the latest
+upgrade-package = ["jax", "jaxlib", "orbax-checkpoint"]

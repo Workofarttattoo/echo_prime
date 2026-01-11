@@ -1,0 +1,9 @@
+{
+  "consolidation_enabled": true,
+  "compression_ratio": 0.2,
+  "importance_weighting": true,
+  "adaptive_forgetting": true,
+  "last_optimization": 1768122587.9838169,
+  "episodic_count": 0,
+  "semantic_count": 2
+}

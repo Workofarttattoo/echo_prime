@@ -1,0 +1,22 @@
+{
+  "mathematics": {
+    "prompt_template": "Solve this step-by-step, showing all work: {question}",
+    "reasoning_depth": 4,
+    "temperature": 0.1
+  },
+  "logic": {
+    "prompt_template": "Analyze this logical problem systematically: {question}",
+    "reasoning_depth": 3,
+    "temperature": 0.2
+  },
+  "science": {
+    "prompt_template": "Apply scientific reasoning to: {question}",
+    "reasoning_depth": 4,
+    "temperature": 0.15
+  },
+  "general": {
+    "prompt_template": "Reason through this problem: {question}",
+    "reasoning_depth": 2,
+    "temperature": 0.3
+  }
+}

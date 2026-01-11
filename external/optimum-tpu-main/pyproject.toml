@@ -1,0 +1,110 @@
+#  Copyright 2022 The HuggingFace Team. All rights reserved.
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+[project]
+name = "optimum-tpu"
+dynamic = ["version"]
+authors=[
+    { name = "HuggingFace Inc. Machine Learning Optimization Team", email = "hardware@huggingface.co"}
+]
+description = "Optimum TPU is the interface between the Hugging Face Transformers library and Google Cloud TPU devices."
+readme = "README.md"
+license = {file = "LICENSE"}
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "License :: OSI Approved :: Apache Software License",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+keywords = [
+    "transformers",
+    "fine-tuning",
+    "inference",
+    "tpu",
+    "cloud-tpu",
+    "gcp",
+    "google-cloud"
+]
+
+dependencies = [
+    "transformers == 4.46.3",
+    "torch == 2.5.1",
+    "torch-xla[tpu] == 2.5.1",
+    'typer == 0.6.1',
+    "loguru == 0.6.0",
+    "sentencepiece == 0.2.0",
+]
+
+[tool.setuptools_scm]
+
+[build-system]
+requires = ["setuptools>=64", "setuptools_scm>=8"]
+build-backend = "setuptools.build_meta"
+
+[project.optional-dependencies]
+tests = ["pytest", "safetensors"]
+quality = ["black", "ruff", "isort"]
+# Jetstream/Pytorch support is experimental for now, it needs to be installed manually.
+# Pallas is pulled because it will install a compatible version of jax[tpu].
+jetstream-pt = [
+    "jetstream-pt",
+    "torch-xla[pallas] == 2.5.1"
+]
+
+[project.urls]
+Homepage = "https://hf.co/hardware"
+Documentation = "https://hf.co/docs/optimum/tpu"
+Repository = "https://github.com/huggingface/optimum-tpu"
+Issues = "https://github.com/huggingface/optimum-tpu/issues"
+
+[tool.setuptools.packages.find]
+include = ["optimum.tpu*"]
+
+[tool.black]
+line-length = 119
+target-version = ['py38']
+extend-exclude = '.ipynb'
+
+[tool.ruff]
+# Never enforce `E501` (line length violations).
+lint.ignore = ["C901", "E501", "E741", "W605"]
+lint.select = ["C", "E", "F", "I", "W"]
+line-length = 119
+
+# Ignore import violations in all `__init__.py` files.
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["E402", "F401", "F403", "F811"]
+
+[tool.ruff.lint.isort]
+lines-after-imports = 2
+known-first-party = ["optimum.tpu"]
+
+[tool.pytest.ini_options]
+markers = [
+    "is_staging_test",
+]
+filterwarnings = [
+    "ignore:Some donated",
+    "ignore:The given NumPy array is not writable",
+    "ignore:`do_sample` is set",
+    "ignore:Device capability of jax",
+    "ignore:`tensorflow` can conflict",
+]
+
+[project.scripts]
+optimum-tpu = "optimum.tpu.cli:app"

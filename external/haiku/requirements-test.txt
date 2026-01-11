@@ -1,0 +1,9 @@
+chex>=0.0.4
+cloudpickle>=1.2.2
+dill
+mock>=3.0.5
+pytest-xdist
+virtualenv
+dm-tree>=0.1.1
+tensorflow>=2.20.0rc0
+optax>=0.0.1
