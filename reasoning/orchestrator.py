@@ -52,7 +52,8 @@ class ReasoningOrchestrator:
                  knowledge_graph: KnowledgeGraph = None,
                  qulab: QuLabBridge = None,
                  arxiv: ArxivScanner = None,
-                 prompt_masterworks: Any = None):
+                 prompt_masterworks: Any = None,
+                 llm_bridge: Any = None):
                  
         self.probabilistic = RealProbabilisticReasoning(latent_dim=100, device="cpu")
         self.analogy = AnalogicalReasoning()
@@ -60,7 +61,10 @@ class ReasoningOrchestrator:
         self.use_llm = use_llm
         self.prompt_masterworks = prompt_masterworks
         
-        self.llm_bridge = OllamaBridge(model=model_name) if use_llm else None
+        if llm_bridge:
+            self.llm_bridge = llm_bridge
+        else:
+            self.llm_bridge = OllamaBridge(model=model_name) if use_llm else None
         self.vision_bridge = OllamaBridge(model=vision_model) if use_llm else None
         
         # Governance & Tools

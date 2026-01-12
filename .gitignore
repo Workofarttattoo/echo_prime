@@ -110,3 +110,7 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+# Large model/checkpoint files
+*.pt
+checkpoints/
+bbb_real

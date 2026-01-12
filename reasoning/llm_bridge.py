@@ -66,3 +66,41 @@ class OllamaBridge:
         user_prompt = f"Current Context: {json.dumps(context, indent=2)}\n\nReason through this scenario."
         
         return self.query(user_prompt, system=system_prompt)
+
+class TogetherBridge:
+    """
+    Connects to Together AI for 70B+ model inference.
+    """
+    def __init__(self, model: str = "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo"):
+        self.model = model
+        self.api_key = os.getenv("TOGETHER_API_KEY")
+        self.api_url = "https://api.together.xyz/v1/chat/completions"
+
+    def query(self, prompt: str, system: Optional[str] = None, **kwargs) -> str:
+        if not self.api_key:
+             return "ERROR: TOGETHER_API_KEY not found."
+             
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        messages = []
+        if system:
+            messages.append({"role": "system", "content": system})
+        messages.append({"role": "user", "content": prompt})
+
+        payload = {
+            "model": self.model,
+            "messages": messages,
+            "max_tokens": 1000,
+            "temperature": 0.7
+        }
+        
+        try:
+            response = requests.post(self.api_url, json=payload, headers=headers)
+            response.raise_for_status()
+            data = response.json()
+            return data['choices'][0]['message']['content']
+        except Exception as e:
+            return f"TOGETHER API ERROR: {str(e)}"
