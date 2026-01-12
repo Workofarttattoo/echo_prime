@@ -2,10 +2,10 @@ import numpy as np
 import os
 import json
 import time
-import torch
+import torch  # pyright: ignore[reportUnusedImport]
 import torch.nn as nn
 from typing import List, Dict, Optional, Tuple
-from collections import deque
+from collections import deque  # pyright: ignore[reportUnusedImport]
 try:
     import faiss
     FAISS_AVAILABLE = True
