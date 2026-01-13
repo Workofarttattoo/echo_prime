@@ -22,6 +22,7 @@ class FullBenchmarkRunner:
         self.ech0_endpoint = ech0_endpoint
         self.results = {}
         self.datasets = {}
+        self.agi = None
 
         # Dataset configurations
         self.dataset_sources = {
@@ -198,6 +199,14 @@ class FullBenchmarkRunner:
 
         return data
 
+    def _get_agi(self):
+        """Lazy load AGI instance"""
+        if self.agi is None:
+            from main_orchestrator import EchoPrimeAGI
+            print("🧠 Initializing persistent ECH0-PRIME AGI instance...")
+            self.agi = EchoPrimeAGI(enable_voice=False)
+        return self.agi
+
     def run_benchmark(self, dataset_name: str, num_samples: int = None,
                      split: str = 'test') -> Dict[str, Any]:
         """Run benchmark on a specific dataset"""
@@ -301,22 +310,19 @@ class FullBenchmarkRunner:
             results['partial_credit_rate'] = (results['ech0_partial'] / evaluated) * 100
             results['average_confidence'] = total_confidence / evaluated
 
-        print("
-📈 RESULTS:")
-        print(".1f")
+        print("\n📈 RESULTS:")
+        print("-" * 40)
+        print(f"  Accuracy: {results['accuracy']:.1f}%")
         print(f"  Partial Credit: {results['ech0_partial']}/{evaluated} ({results['partial_credit_rate']:.1f}%)")
         print(f"  Errors: {results['ech0_errors']}/{results['total_samples']}")
-        print(".1f")
+        print("-" * 40)
         self.results[dataset_name] = results
         return results
 
     def _evaluate_gsm8k_sample(self, problem: str, expected: str) -> Dict[str, Any]:
         """Evaluate GSM8K sample using ECH0"""
-        # Use local ECH0 instance instead of API
-        from main_orchestrator import EchoPrimeAGI
-
         try:
-            agi = EchoPrimeAGI(enable_voice=False)
+            agi = self._get_agi()
             answer = agi.solve_mathematical_problem(problem)
 
             # Simple evaluation - check if expected answer is in response
@@ -344,10 +350,8 @@ class FullBenchmarkRunner:
 
     def _evaluate_arc_sample(self, problem: str, choices: List[str], expected: str) -> Dict[str, Any]:
         """Evaluate ARC sample using ECH0"""
-        from main_orchestrator import EchoPrimeAGI
-
         try:
-            agi = EchoPrimeAGI(enable_voice=False)
+            agi = self._get_agi()
 
             # Format as multiple choice
             choice_str = '\n'.join([f"{chr(65+i)}) {choice}" for i, choice in enumerate(choices)])
@@ -379,10 +383,8 @@ class FullBenchmarkRunner:
 
     def _evaluate_math_sample(self, problem: str, expected: str) -> Dict[str, Any]:
         """Evaluate MATH sample using ECH0"""
-        from main_orchestrator import EchoPrimeAGI
-
         try:
-            agi = EchoPrimeAGI(enable_voice=False)
+            agi = self._get_agi()
             answer = agi.solve_mathematical_problem(problem)
 
             # MATH evaluation - check for mathematical correctness
@@ -407,10 +409,8 @@ class FullBenchmarkRunner:
 
     def _evaluate_mmlu_sample(self, problem: str, choices: List[str], expected: int) -> Dict[str, Any]:
         """Evaluate MMLU sample using ECH0"""
-        from main_orchestrator import EchoPrimeAGI
-
         try:
-            agi = EchoPrimeAGI(enable_voice=False)
+            agi = self._get_agi()
 
             # Format as multiple choice
             choice_str = '\n'.join([f"{i+1}. {choice}" for i, choice in enumerate(choices)])
@@ -626,17 +626,17 @@ class FullBenchmarkRunner:
         print("=" * 60)
 
         overall = report['overall_performance']
-        print(".1f"        print(f"   Datasets Tested: {report['total_datasets']}")
+        print(f"   Datasets Tested: {report['total_datasets']}")
         print(f"   Total Samples: {overall['total_samples']}")
 
-        print("
-🏆 SUPREMACY ANALYSIS:"        for competitor, analysis in report['supremacy_analysis'].items():
+        print("\n🏆 SUPREMACY ANALYSIS:")
+        for competitor, analysis in report['supremacy_analysis'].items():
             margin = analysis['margin']
             level = analysis['supremacy_level']
-            print("8")
+            print(f"   {competitor}: margin {margin:.2f}, level {level}")
 
-        print("
-💡 RECOMMENDATIONS:"        for rec in report['recommendations']:
+        print("\n💡 RECOMMENDATIONS:")
+        for rec in report['recommendations']:
             print(f"   • {rec}")
 
 def main():
@@ -662,8 +662,8 @@ def main():
     # Run benchmarks
     report = runner.run_all_benchmarks(args.datasets, args.samples)
 
-    print("
-✅ Full dataset benchmarking completed!"    print("Results demonstrate ECH0-PRIME's AI supremacy across comprehensive evaluation suites.")
+    print("\n✅ Full dataset benchmarking completed!")
+    print("Results demonstrate ECH0-PRIME's AI supremacy across comprehensive evaluation suites.")
 
 if __name__ == "__main__":
     main()

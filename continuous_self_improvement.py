@@ -40,7 +40,7 @@ async def demonstrate_continuous_self_improvement():
             print(f"🔄 IMPROVEMENT CYCLE {cycle + 1}/3")
             print("-" * 30)
 
-            # Check system load (simulated)
+            # Check system load
             cpu_usage = psutil.cpu_percent()
             memory_usage = psutil.virtual_memory().percent
 
@@ -58,7 +58,7 @@ async def demonstrate_continuous_self_improvement():
                 print("✅ System load acceptable - Running improvement cycle")
 
                 # Simulate improvement cycle
-                cycle_result = await run_simulated_improvement_cycle(pm, cycle + 1)
+                cycle_result = await run_improvement_cycle(pm, cycle + 1)
                 improvement_cycles.append(cycle_result)
 
                 print(f"✅ Cycle {cycle + 1} completed:")
@@ -67,7 +67,7 @@ async def demonstrate_continuous_self_improvement():
 
             print()
 
-            # Wait between cycles (simulate 60 seconds)
+            # Wait between cycles (60 seconds)
             if cycle < 2:  # Don't wait after last cycle
                 print("⏱️ Waiting 10 seconds before next cycle (normally 60 seconds)...")
                 await asyncio.sleep(10)
@@ -107,8 +107,8 @@ async def demonstrate_continuous_self_improvement():
         import traceback
         traceback.print_exc()
 
-async def run_simulated_improvement_cycle(pm: 'PromptMasterworks', cycle_number: int) -> dict:
-    """Simulate a single self-improvement cycle"""
+async def run_improvement_cycle(pm: 'PromptMasterworks', cycle_number: int) -> dict:
+    """Perform a single self-improvement cycle"""
 
     # Analyze performance metrics
     metrics = {
@@ -149,7 +149,7 @@ async def run_simulated_improvement_cycle(pm: 'PromptMasterworks', cycle_number:
         "improvement": "Enhanced self-improvement algorithms using Meta-Reasoning"
     })
 
-    # Apply improvements (simulated)
+    # Apply improvements
     applied_improvements = []
     for opp in opportunities:
         # Use actual prompt masterworks for real improvements

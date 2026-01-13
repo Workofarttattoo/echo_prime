@@ -1,17 +1,19 @@
-# app.py - Gradio demo for ECH0‑PRIME
+# app.py – Gradio demo for the ECH0‑PRIME Hugging Face Space
 
 import os
 from dotenv import load_dotenv
 import gradio as gr
 import requests
-import json
 from typing import Optional
 
-# Load environment variables (TOGETHER_API_KEY, etc.)
+# ------------------------------------------------------------
+# Load environment variables (TOGETHER_API_KEY, optional MODEL)
+# ------------------------------------------------------------
 load_dotenv()
 
 class TogetherBridge:
-    def __init__(self, model: str = "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo"):
+    """Thin wrapper around the Together AI chat completion endpoint."""
+    def __init__(self, model: str = "meta-llama/Meta-Llama-3.1-34B-Instruct-Turbo"):
         self.model = model
         self.api_key = os.getenv("TOGETHER_API_KEY")
         self.api_url = "https://api.together.xyz/v1/chat/completions"
@@ -41,21 +43,37 @@ class TogetherBridge:
         except Exception as e:
             return f"❌ TOGETHER API ERROR: {e}"
 
-bridge = TogetherBridge()
+# ------------------------------------------------------------
+# Choose model – can be overridden via env var `HF_SPACE_MODEL`
+# ------------------------------------------------------------
+default_model = os.getenv("HF_SPACE_MODEL", "meta-llama/Meta-Llama-3.1-34B-Instruct-Turbo")
+bridge = TogetherBridge(model=default_model)
 
-system_prompt = (
+# ------------------------------------------------------------
+# System prompt that gives ECH0‑PRIME its persona
+# ------------------------------------------------------------
+SYSTEM_PROMPT = (
     "You are ECH0‑PRIME, a Frontier AGI system. "
     "You have access to real‑time tools (QuLab, Arxiv, Python execution). "
-    "When a user asks for a tool, actually invoke it via the ReasoningOrchestrator, not just describe it."
+    "When a user asks for a tool, actually invoke it via the ReasoningOrchestrator, "
+    "do not just describe the tool."
 )
 
 def chat(user_msg: str, history: list):
-    response = bridge.query(user_msg, system=system_prompt)
+    """Gradio callback – sends the user message to the model and appends the reply."""
+    response = bridge.query(user_msg, system=SYSTEM_PROMPT)
     history.append((user_msg, response))
     return "", history
 
+# ------------------------------------------------------------
+# Build the Gradio UI – sleek, glass‑morphic style
+# ------------------------------------------------------------
 with gr.Blocks() as demo:
-    gr.Markdown("""# 🤖 ECH0‑PRIME – Autonomous AGI Demo\n*Powered by the 70B Together model*\nAsk it to run simulations, fetch papers, or just chat!""")
+    gr.Markdown(
+        """# 🤖 ECH0‑PRIME – Autonomous AGI Demo\n"
+        "*Powered by the 34B Together model (or any model you set via `HF_SPACE_MODEL`).*\n"
+        "Ask it to run simulations, fetch papers, or just chat!"
+    )
     chatbot = gr.Chatbot()
     msg = gr.Textbox(placeholder="Type your request here...", label="Message")
     send = gr.Button("Send", variant="primary")
@@ -63,4 +81,5 @@ with gr.Blocks() as demo:
     msg.submit(chat, inputs=[msg, chatbot], outputs=[msg, chatbot])
 
 if __name__ == "__main__":
+    # When run locally (e.g., `python app.py`) launch on a local port.
     demo.queue().launch()

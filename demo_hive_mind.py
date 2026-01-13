@@ -147,6 +147,54 @@ def demonstrate_creative_problem():
     hive.shutdown_hive()
     return result
 
+
+def demonstrate_stem_cell_regrowth():
+    """Demonstrate hive mind solving stem cell regrowth for major body parts"""
+    print("\n🧬 DEMONSTRATION: Stem Cell Regrowth Optimization")
+    print("=" * 50)
+
+    hive = HiveMindOrchestrator(num_nodes=6)
+
+    body_parts = [
+        "brain",
+        "heart",
+        "liver",
+        "kidney",
+        "lungs",
+        "skin",
+        "muscle",
+        "bone"
+    ]
+
+    task_ids = []
+    for part in body_parts:
+        task_desc = f"Optimize stem cell regrowth process for the human {part}"
+        task_id = hive.submit_task(task_desc, domain="biology", complexity=2.0)
+        task_ids.append(task_id)
+        print(f"🎯 Task submitted for {part}: {task_id}")
+
+    # Run cycles indefinitely, tailing stats
+    cycles = 0
+    while True:
+        result = hive.run_hive_cycle()
+        completed = len(result.get('completed_tasks', []))
+        if completed:
+            print(f"🔄 Cycle {cycles+1}: Completed {completed} stem cell tasks")
+        cycles += 1
+        if all(hive.tasks[tid].status == 'completed' for tid in task_ids):
+            break
+        time.sleep(1)
+
+    # Summarize results
+    print("\n📊 STEM CELL REGROWTH RESULTS:")
+    for tid in task_ids:
+        task = hive.tasks[tid]
+        sol = task.consensus_solution
+        print(f"- {task.description}: confidence {sol.get('confidence',0):.2f}")
+
+    hive.shutdown_hive()
+    return result
+
 def run_full_demonstration():
     """Run complete hive mind demonstration suite"""
     print("🧠 ECH0-PRIME HIVE MIND DEMONSTRATION SUITE")
@@ -158,7 +206,8 @@ def run_full_demonstration():
         ("Algorithm Design", demonstrate_algorithm_design),
         ("System Optimization", demonstrate_optimization_problem),
         ("Scientific Discovery", demonstrate_scientific_discovery),
-        ("Creative Innovation", demonstrate_creative_problem)
+        ("Creative Innovation", demonstrate_creative_problem),
+        ("Stem Cell Regrowth", demonstrate_stem_cell_regrowth)
     ]
 
     results_summary = []

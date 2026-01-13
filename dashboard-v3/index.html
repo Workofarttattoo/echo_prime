@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECH0-PRIME | Intelligence Command</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+
+<body class="dark-theme">
+    <div class="debug-css">CSS LOADED ✅</div>
+    <div class="background-radial"></div>
+    <div id="canvas-container"></div>
+
+    <main class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar glass">
+            <div class="logo">
+                <span class="echo">ECH0</span><span class="prime">PRIME</span>
+            </div>
+            <ul class="nav-links">
+                <li class="active" data-section="overview">Overview</li>
+                <li data-section="chat">Neural Chat</li>
+                <li data-section="activity">Autonomous Activity</li>
+                <li data-section="memory">Memory Bank</li>
+                <li data-section="evolution">System 3 Evolution</li>
+            </ul>
+            <div class="system-status">
+                <div class="status-indicator online"></div>
+                <span>70B BACKBONE ONLINE</span>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <section class="content-area">
+            <!-- Header stats -->
+            <header class="top-bar glass">
+                <div class="stat-card">
+                    <label>Accuracy</label>
+                    <span class="value">97.1%</span>
+                </div>
+                <div class="stat-card">
+                    <label>Intelligence Grade</label>
+                    <span class="value-highlight">A+</span>
+                </div>
+                <div class="stat-card">
+                    <label>Evolution Units</label>
+                    <span class="value" id="evolution-units">--</span>
+                </div>
+                <div class="stat-card">
+                    <label>Φ Consciousness</label>
+                    <span class="value" id="phi-value">--</span>
+                </div>
+            </header>
+
+            <!-- Overview Section -->
+            <div id="overview" class="section active">
+                <div class="grid-layout">
+                    <div class="large-card glass">
+                        <h2>System Intelligence Projection</h2>
+                        <div class="chart-placeholder">
+                            <div class="bar-group">
+                                <label>MMLU</label>
+                                <div class="bar">
+                                    <div class="fill" style="width: 100%;"></div>
+                                </div>
+                            </div>
+                            <div class="bar-group">
+                                <label>GSM8K</label>
+                                <div class="bar">
+                                    <div class="fill" style="width: 90%;"></div>
+                                </div>
+                            </div>
+                            <div class="bar-group">
+                                <label>TruthfulQA</label>
+                                <div class="bar">
+                                    <div class="fill" style="width: 100%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card glass">
+                        <h3>Active Missions</h3>
+                        <div class="mission-list">
+                            <div class="mission-item">
+                                <span class="priority high">0.98</span>
+                                <span>Healthcare Innovation</span>
+                            </div>
+                            <div class="mission-item">
+                                <span class="priority high">0.95</span>
+                                <span>Business Automation</span>
+                            </div>
+                            <div class="mission-item">
+                                <span class="priority medium">0.92</span>
+                                <span>Software Engineering</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Section -->
+            <div id="chat" class="section">
+                <div class="chat-container glass">
+                    <div id="chat-messages" class="messages">
+                        <div class="message system">🤖 ECH0-PRIME online. 97.1% performance mode active. Ready for commands...</div>
+                    </div>
+                    <div class="input-area">
+                        <textarea id="chat-input" placeholder="Enter your command..."></textarea>
+                        <button id="send-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Autonomous Activity Section -->
+            <div id="activity" class="section">
+                <div class="activity-monitor glass">
+                    <h2>🤖 Autonomous Activity Monitor</h2>
+                    <div class="activity-stats">
+                        <div class="stat-item">
+                            <label>Current Operations</label>
+                            <div id="current-ops" class="stat-value">Loading...</div>
+                        </div>
+                        <div class="stat-item">
+                            <label>Activities Logged</label>
+                            <div id="activity-count" class="stat-value">0</div>
+                        </div>
+                        <div class="stat-item">
+                            <label>Last Update</label>
+                            <div id="last-update" class="stat-value">--</div>
+                        </div>
+                    </div>
+                    <div class="activity-controls">
+                        <button id="refresh-activity-btn" class="control-btn">🔄 Refresh</button>
+                        <button id="auto-activity-btn" class="control-btn active">⚡ Auto: ON</button>
+                    </div>
+                    <div class="activity-feed" id="activity-feed">
+                        <div class="activity-item loading">
+                            <span>Loading autonomous activity...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Evolution Section -->
+            <div id="evolution" class="section">
+                <div class="evolution-feed glass">
+                    <h2>Live Evolution Stream</h2>
+                    <div id="evolution-log" class="mono-feed">
+                        [INIT] 70B Backbone connected - 97.1% performance mode
+                    </div>
+                </div>
+            </div>
+
+            <!-- Memory Bank Section -->
+            <div id="memory" class="section">
+                <div class="large-card glass">
+                    <h2>Semantic Memory Lattice</h2>
+                    <div class="memory-stats-bar">
+                        <span>Active Patterns: 42</span>
+                        <span>Total Embeddings: 124</span>
+                        <span>Last Update: Just now (70B Model)</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

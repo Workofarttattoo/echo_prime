@@ -114,3 +114,7 @@ yarn-error.log*
 *.pt
 checkpoints/
 bbb_real
+# Large model/checkpoint files
+*.pt
+checkpoints/
+bbb_real
