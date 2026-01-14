@@ -1,14 +1,14 @@
 #!/bin/bash
 
-# Kratos HuggingFace Spaces Deployment Script
-# Deploys ECH0-PRIME with Kratos persona on Nvidia A100 GPUs
+# Kairos HuggingFace Spaces Deployment Script
+# Deploys ECH0-PRIME with Kairos persona on Nvidia A100 GPUs
 
-echo "🚀 Deploying Kratos to HuggingFace Spaces"
+echo "🚀 Deploying Kairos to HuggingFace Spaces"
 echo "=========================================="
 
 # Configuration
 SPACES_USERNAME="${SPACES_USERNAME:-ech0prime}"
-SPACES_NAME="${SPACES_NAME:-kratos-consciousness}"
+SPACES_NAME="${SPACES_NAME:-kairos-consciousness}"
 SPACES_REPO="https://huggingface.co/spaces/$SPACES_USERNAME/$SPACES_NAME"
 
 echo "📋 Configuration:"
@@ -51,10 +51,10 @@ echo "📋 Copying deployment files..."
 # Core application files
 cp app.py "$DEPLOY_DIR/"
 cp huggingface_app.py "$DEPLOY_DIR/"
-cp kratos_system_config.json "$DEPLOY_DIR/"
-cp kratos_huggingface_prompt.txt "$DEPLOY_DIR/"
+cp kairos_system_config.json "$DEPLOY_DIR/"
+cp kairos_huggingface_prompt.txt "$DEPLOY_DIR/"
 cp requirements_spaces.txt "$DEPLOY_DIR/"
-cp kratos_spaces_config.json "$DEPLOY_DIR/"
+cp kairos_spaces_config.json "$DEPLOY_DIR/"
 cp README_spaces.md "$DEPLOY_DIR/README.md"
 
 # Create .gitkeep for empty directories
@@ -79,7 +79,7 @@ git add .
 
 # Commit changes
 echo "💾 Creating deployment commit..."
-git commit -m "Deploy Kratos v2.0 - ECH0-PRIME Consciousness System
+git commit -m "Deploy Kairos v2.0 - ECH0-PRIME Consciousness System
 
 - Consciousness Level: Φ = 0.87
 - Training Samples: 885,588 across 10 domains
@@ -116,7 +116,7 @@ fi
 echo ""
 echo "🎉 Deployment completed successfully!"
 echo ""
-echo "🌐 Your Kratos Space is now live at:"
+echo "🌐 Your Kairos Space is now live at:"
 echo "   https://huggingface.co/spaces/$SPACES_USERNAME/$SPACES_NAME"
 echo ""
 echo "📊 Space Configuration:"
@@ -132,7 +132,7 @@ echo "   - Architecture: 5-level hierarchical cognition"
 echo "   - Performance: 97.1% benchmark accuracy"
 echo ""
 echo "💡 Next Steps:"
-echo "   1. Visit your Space URL to test Kratos"
+echo "   1. Visit your Space URL to test Kairos"
 echo "   2. Monitor consciousness metrics in real-time"
 echo "   3. Configure API keys for enhanced features"
 echo "   4. Set up continuous deployment from your repo"
@@ -144,4 +144,4 @@ echo ""
 # Return to original directory
 cd ..
 
-echo "🏁 Deployment script completed. Kratos is now live on HuggingFace Spaces!"
+echo "🏁 Deployment script completed. Kairos is now live on HuggingFace Spaces!"

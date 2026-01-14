@@ -378,6 +378,19 @@ async def chat_endpoint(request: ChatRequest):
         # Fallback if empty
         if not response_text:
             response_text = "Task executed. (Check Orchestrator logs for tool outputs)."
+
+        # Log conversation to file
+        try:
+            timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+            log_entry = {
+                "timestamp": timestamp,
+                "user": request.message,
+                "kairos": response_text
+            }
+            with open("dashboard_chat.log", "a") as f:
+                f.write(json.dumps(log_entry) + "\n")
+        except Exception as e:
+            print(f"❌ Failed to log chat: {e}")
             
         return {
             "response": response_text, 

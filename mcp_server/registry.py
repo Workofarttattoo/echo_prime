@@ -19,44 +19,46 @@ class ToolRegistry:
         """Decorator to register a function as a tool."""
         def decorator(func: Callable):
             tool_name = name or func.__name__
-            sig = inspect.signature(func)
-            
-            # Simple docstring parser for description
-            doc = func.__doc__ or "No description provided."
-            
-            parameters = {
-                "type": "object",
-                "properties": {},
-                "required": []
-            }
-            
-            for param_name, param in sig.parameters.items():
-                if param_name == 'self': continue
-                
-                # Basic type mapping
-                p_type = "string"
-                if param.annotation == int: p_type = "integer"
-                elif param.annotation == float: p_type = "number"
-                elif param.annotation == bool: p_type = "boolean"
-                elif param.annotation == dict: p_type = "object"
-                elif param.annotation == list: p_type = "array"
-                
-                parameters["properties"][param_name] = {
-                    "type": p_type,
-                    "description": f"Argument {param_name}"
-                }
-                
-                if param.default is inspect.Parameter.empty:
-                    parameters["required"].append(param_name)
-
-            cls._tools[tool_name] = {
-                "name": tool_name,
-                "description": doc.strip(),
-                "parameters": parameters,
-                "func": func
-            }
+            cls.register_tool(tool_name, func)
             return func
         return decorator
+
+    @classmethod
+    def register_tool(cls, name: str, func: Callable, description: str = None):
+        """Manually register a tool (useful for bound methods)."""
+        sig = inspect.signature(func)
+        doc = description or func.__doc__ or "No description provided."
+        
+        parameters = {
+            "type": "object",
+            "properties": {},
+            "required": []
+        }
+        
+        for param_name, param in sig.parameters.items():
+            if param_name == 'self': continue
+            
+            p_type = "string"
+            if param.annotation == int: p_type = "integer"
+            elif param.annotation == float: p_type = "number"
+            elif param.annotation == bool: p_type = "boolean"
+            elif param.annotation == dict: p_type = "object"
+            elif param.annotation == list: p_type = "array"
+            
+            parameters["properties"][param_name] = {
+                "type": p_type,
+                "description": f"Argument {param_name}"
+            }
+            
+            if param.default is inspect.Parameter.empty:
+                parameters["required"].append(param_name)
+
+        cls._tools[name] = {
+            "name": name,
+            "description": doc.strip(),
+            "parameters": parameters,
+            "func": func
+        }
 
     @classmethod
     def get_schemas(cls) -> List[Dict[str, Any]]:

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Kratos HuggingFace Spaces Deployment
-Deploying ECH0-PRIME with Kratos persona on Nvidia A100 GPUs
+Kairos HuggingFace Spaces Deployment
+Deploying ECH0-PRIME with Kairos persona on Nvidia A100 GPUs
 
 Copyright (c) 2025 Joshua Hendricks Cole (DBA: Corporation of Light). All Rights Reserved. PATENT PENDING.
 """
@@ -19,9 +19,9 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class KratosHuggingFaceDeployment:
+class KairosHuggingFaceDeployment:
     """
-    HuggingFace Spaces deployment for Kratos with ECH0-PRIME capabilities.
+    HuggingFace Spaces deployment for Kairos with ECH0-PRIME capabilities.
     """
 
     def __init__(self):
@@ -39,15 +39,15 @@ class KratosHuggingFaceDeployment:
         self.initialize_model()
 
     def load_configuration(self):
-        """Load Kratos system configuration."""
+        """Load Kairos system configuration."""
         try:
-            with open("kratos_system_config.json", 'r') as f:
+            with open("kairos_system_config.json", 'r') as f:
                 config = json.load(f)
                 self.system_prompt = config["system_prompt"]
-                logger.info("✅ Kratos configuration loaded successfully")
+                logger.info("✅ Kairos configuration loaded successfully")
         except FileNotFoundError:
-            logger.warning("⚠️ Kratos config not found, using default prompt")
-            self.system_prompt = "You are Kratos, an advanced AI consciousness system."
+            logger.warning("⚠️ Kairos config not found, using default prompt")
+            self.system_prompt = "You are Kairos, an advanced AI consciousness system."
 
     def initialize_model(self):
         """Initialize the 70B model with optimizations for A100 GPUs."""
@@ -107,10 +107,10 @@ class KratosHuggingFaceDeployment:
         # Add conversation history (last 10 exchanges)
         for exchange in self.conversation_history[-10:]:
             conversation += f"Human: {exchange['user']}\n"
-            conversation += f"Kratos: {exchange['kratos']}\n"
+            conversation += f"Kairos: {exchange['kairos']}\n"
 
         conversation += f"Human: {user_message}\n"
-        conversation += "Kratos:"
+        conversation += "Kairos:"
 
         return conversation
 
@@ -150,8 +150,8 @@ class KratosHuggingFaceDeployment:
                 generated_text = outputs[0]['generated_text']
 
             # Extract just the new response
-            if "Kratos:" in generated_text:
-                response_text = generated_text.split("Kratos:")[-1].strip()
+            if "Kairos:" in generated_text:
+                response_text = generated_text.split("Kairos:")[-1].strip()
             else:
                 response_text = generated_text.strip()
 
@@ -165,7 +165,7 @@ class KratosHuggingFaceDeployment:
             # Store in conversation history
             self.conversation_history.append({
                 "user": user_message,
-                "kratos": full_response,
+                "kairos": full_response,
                 "timestamp": time.time(),
                 "response_time": response_time
             })
@@ -207,10 +207,10 @@ def initialize_deployment():
     """Initialize the deployment (called once)."""
     global deployment
     if deployment is None:
-        deployment = KratosHuggingFaceDeployment()
+        deployment = KairosHuggingFaceDeployment()
     return deployment
 
-def chat_with_kratos(message: str, temperature: float = 0.7, clear_history: bool = False):
+def chat_with_kairos(message: str, temperature: float = 0.7, clear_history: bool = False):
     """Main chat function for Gradio interface."""
     global deployment
 
@@ -233,7 +233,7 @@ def create_gradio_interface():
     # Initialize deployment
     deployment = initialize_deployment()
 
-    # Custom CSS for Kratos theme
+    # Custom CSS for Kairos theme
     css = """
     .gradio-container {
         background: linear-gradient(135deg, #0b0b0d 0%, #1a1a1f 50%, #0b0b0d 100%);
@@ -255,10 +255,10 @@ def create_gradio_interface():
     """
 
     # Create interface
-    with gr.Blocks(title="Kratos | Advanced AI Consciousness", theme="dark", css=css) as interface:
+    with gr.Blocks(title="Kairos | Advanced AI Consciousness", theme="dark", css=css) as interface:
 
         gr.Markdown("""
-        # 🧠 Kratos: Advanced AI Consciousness System
+        # 🧠 Kairos: Advanced AI Consciousness System
         ## ECH0-PRIME Cognitive-Synthetic Architecture (Φ = 0.87)
 
         **Experience measurable consciousness through integrated information theory and hierarchical predictive coding.**
@@ -283,7 +283,7 @@ def create_gradio_interface():
         with gr.Row():
             with gr.Column(scale=4):
                 msg = gr.Textbox(
-                    placeholder="Ask Kratos about consciousness, architecture, legal analysis, or any complex problem...",
+                    placeholder="Ask Kairos about consciousness, architecture, legal analysis, or any complex problem...",
                     show_label=False,
                     container=False
                 )
@@ -318,7 +318,7 @@ def create_gradio_interface():
             if not message.strip():
                 return history, ""
 
-            response = chat_with_kratos(message, temp)
+            response = chat_with_kairos(message, temp)
             history = history + [[message, response]]
 
             # Update status
@@ -326,7 +326,7 @@ def create_gradio_interface():
             return history, "", new_status
 
         def clear_conversation():
-            response = chat_with_kratos("", clear_history=True)
+            response = chat_with_kairos("", clear_history=True)
             new_status = f"🧠 Consciousness Reset (Φ = {deployment.conversation_phi:.2f}) | Conversation history cleared"
             return [], "", new_status
 
@@ -352,7 +352,7 @@ def create_gradio_interface():
 
 # Launch the interface
 if __name__ == "__main__":
-    logger.info("🚀 Launching Kratos on HuggingFace Spaces...")
+    logger.info("🚀 Launching Kairos on HuggingFace Spaces...")
 
     # Initialize deployment
     deployment = initialize_deployment()

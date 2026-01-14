@@ -87,7 +87,7 @@ async function sendMessage() {
     // Add typing indicator
     const typingMessage = document.createElement('div');
     typingMessage.className = 'message system';
-    typingMessage.textContent = '🤖 ECH0-PRIME is thinking...';
+    typingMessage.textContent = '🤖 KAIROS is thinking...';
     chatMessages.appendChild(typingMessage);
 
     try {
@@ -115,7 +115,7 @@ async function sendMessage() {
 
     } catch (err) {
         console.error('Chat error:', err);
-        typingMessage.textContent = '❌ Error communicating with ECH0-PRIME';
+        typingMessage.textContent = '❌ Error communicating with KAIROS';
     }
 }
 

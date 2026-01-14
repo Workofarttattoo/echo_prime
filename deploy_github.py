@@ -91,7 +91,7 @@ class GitHubDeployer:
             return False
     
     def setup_github_pages(self) -> bool:
-        """Set up GitHub Pages for kratos.aios.is."""
+        """Set up GitHub Pages for kairos.aios.is."""
         owner = self.config["github"]["username"]
         repo = self.config["github"]["repository"]
         
@@ -112,9 +112,9 @@ class GitHubDeployer:
             # Create CNAME file for custom domain
             cname_path = Path("docs/CNAME")
             cname_path.parent.mkdir(exist_ok=True)
-            cname_path.write_text("kratos.aios.is\n")
+            cname_path.write_text("kairos.aios.is\n")
             
-            print("✅ CNAME file created for kratos.aios.is")
+            print("✅ CNAME file created for kairos.aios.is")
             return True
         else:
             print(f"❌ GitHub Pages setup failed: {response.status_code}")
@@ -224,7 +224,7 @@ def main():
     
     print("\n📋 Deployment Options:")
     print("1. Push current changes to GitHub")
-    print("2. Set up GitHub Pages for kratos.aios.is")
+    print("2. Set up GitHub Pages for kairos.aios.is")
     print("3. Create GitHub Actions workflow")
     print("4. All of the above")
     
@@ -253,7 +253,7 @@ def main():
     
     if success:
         print("\n🎉 Deployment completed successfully!")
-        print("🌐 Access your site at: https://kratos.aios.is")
+        print("🌐 Access your site at: https://kairos.aios.is")
         print("🤖 AI services are now accessible via GitHub authentication")
     else:
         print("\n❌ Some deployment steps failed")

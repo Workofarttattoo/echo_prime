@@ -204,7 +204,7 @@ class FullBenchmarkRunner:
         if self.agi is None:
             from main_orchestrator import EchoPrimeAGI
             print("🧠 Initializing persistent ECH0-PRIME AGI instance...")
-            self.agi = EchoPrimeAGI(enable_voice=False)
+            self.agi = EchoPrimeAGI(enable_voice=False, lightweight=True)
         return self.agi
 
     def run_benchmark(self, dataset_name: str, num_samples: int = None,

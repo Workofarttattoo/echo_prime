@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-HuggingFace Spaces app.py entry point for Kratos
+HuggingFace Spaces app.py entry point for Kairos
 Minimal launcher that imports and runs the main application
 """
 

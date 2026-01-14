@@ -1,4 +1,4 @@
-# Kratos HuggingFace Spaces Requirements
+# Kairos HuggingFace Spaces Requirements
 # Optimized for Nvidia A100 GPUs with 70B model deployment
 
 # Core dependencies
