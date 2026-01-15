@@ -1,0 +1,36 @@
+[tool.poetry]
+name = "qulab-infinite"
+version = "0.1.0"
+description = "Data, calibration, and benchmarking backbone for the Qulab Infinite stack."
+authors = ["Qulab Infinite <engineering@qulab.example>"]
+license = "MIT"
+readme = "README.md"
+packages = [{ include = "qulab_infinite", from = "src" }]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.13"
+arviz = "^0.16.0"
+duckdb = "^0.10.0"
+dvc = "^3.50.1"
+numpy = "^1.26.4"
+pandas = "^2.2.3"
+pennylane = "^0.39.0"
+pint = "^0.24.4"
+pint-pandas = "^0.3"
+prefect = "^2.20.0"
+pydantic = "^2.9.2"
+pymc = "^5.13.1"
+qiskit = "^1.2.1"
+qiskit-aer = "^0.15.1"
+sqlalchemy = "^2.0.35"
+psycopg = {version = "^3.1.18", extras = ["binary"]}
+xarray = "^2024.6.0"
+requests = "^2.32.3"
+ijson = "^3.2.3"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.3"
+
+[build-system]
+requires = ["poetry-core>=1.8.0"]
+build-backend = "poetry.core.masonry.api"
