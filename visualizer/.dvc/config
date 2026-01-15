@@ -1,0 +1,6 @@
+[core]
+    remote = qulab-local-storage
+    autostage = true
+
+['remote "qulab-local-storage"']
+    url = ../../artifacts/dvc-storage

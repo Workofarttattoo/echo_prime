@@ -126,7 +126,7 @@ def quantum_pso(objective_func, bounds, num_particles={num_particles}):
     }}
 
 # Run optimization
-bounds = {problem_space.get('bounds', '[(0, 1)] * 5')}
+bounds = problem_space.get('bounds', [(0, 1)] * 5)
 result = quantum_pso(lambda x: sum(x**2), bounds)  # Example quadratic optimization
 print(json.dumps(result))
 """

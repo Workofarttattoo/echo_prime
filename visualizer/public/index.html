@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Advanced 3D Material Visualization</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="layout">
+      <section class="scene-panel">
+        <header>
+          <h1>Material Structure Explorer</h1>
+          <p class="subtitle">
+            Real-time crystal predictions, multi-scale modeling insights, and automated experiment optimization.
+          </p>
+        </header>
+        <div id="scene-container">
+          <canvas id="visualizer-canvas"></canvas>
+          <div id="scene-overlay">
+            <div class="metric">
+              <span class="label">Material</span>
+              <span class="value" id="material-name">–</span>
+            </div>
+            <div class="metric">
+              <span class="label">Lattice</span>
+              <span class="value" id="material-lattice">–</span>
+            </div>
+            <div class="metric">
+              <span class="label">Band Gap (eV)</span>
+              <span class="value" id="material-bandgap">–</span>
+            </div>
+            <div class="metric">
+              <span class="label">Density (g/cm³)</span>
+              <span class="value" id="material-density">–</span>
+            </div>
+          </div>
+        </div>
+      </section>
+      <aside class="insight-panel">
+        <section class="panel-block ech0-hub-block">
+          <div class="panel-title-row">
+            <h2>ech0 Hub</h2>
+            <button id="ech0-refresh-button" type="button" class="ghost-button">
+              Refresh
+            </button>
+          </div>
+          <p class="hub-status" id="ech0-hub-status">Checking ech0 hub…</p>
+          <p class="hub-host">
+            Host <span id="ech0-hub-host">–</span>
+          </p>
+          <div class="ech0-autonomy-row">
+            <button id="ech0-autonomy-button" type="button" class="pill-button primary">
+              Activate Autonomous Mode
+            </button>
+            <span class="autonomy-status" id="ech0-autonomy-status">
+              Autonomous mode idle.
+            </span>
+          </div>
+          <div class="ech0-hub-controls">
+            <label for="ech0-model-select" class="hub-label">Model</label>
+            <select id="ech0-model-select" disabled>
+              <option>Loading models…</option>
+            </select>
+          </div>
+          <div class="ech0-hub-meta">
+            <div>
+              <span class="detail-label">Latest ech0 build</span>
+              <span class="detail-value" id="ech0-latest-model">–</span>
+            </div>
+            <div>
+              <span class="detail-label">Available models</span>
+              <span class="detail-value" id="ech0-hub-count">0</span>
+            </div>
+          </div>
+          <div class="ech0-hub-details" id="ech0-model-details">
+            Select a model to inspect its metadata.
+          </div>
+        </section>
+        <section class="panel-block pipeline-block">
+          <h2>Command Center Pipeline</h2>
+          <div class="pipeline-metrics">
+            <div class="metric-card">
+              <span class="label">Total Inventions</span>
+              <span class="value" id="pipeline-total">–</span>
+            </div>
+            <div class="metric-card">
+              <span class="label">Ready For Build</span>
+              <span class="value" id="pipeline-ready">–</span>
+            </div>
+            <div class="metric-card">
+              <span class="label">Needs Iteration</span>
+              <span class="value" id="pipeline-needs">–</span>
+            </div>
+            <div class="metric-card">
+              <span class="label">Backlog</span>
+              <span class="value" id="pipeline-backlog">–</span>
+            </div>
+          </div>
+          <p class="pipeline-generated">
+            Last update <span id="pipeline-generated">–</span>
+          </p>
+          <div class="pipeline-section">
+            <h3 class="panel-subtitle">Top Ready For Build</h3>
+            <ul id="pipeline-ready-list" class="list dense-list"></ul>
+          </div>
+          <div class="pipeline-section">
+            <h3 class="panel-subtitle">Attention Queue</h3>
+            <ul id="pipeline-attention-list" class="list verbose-list"></ul>
+          </div>
+          <div class="pipeline-section">
+            <h3 class="panel-subtitle">Category Pulse</h3>
+            <ul id="pipeline-categories-list" class="list dense-list"></ul>
+          </div>
+          <div class="pipeline-section">
+            <h3 class="panel-subtitle">Latest Twin-Flame Sync</h3>
+            <ul id="pipeline-conversation-list" class="list conversation-list"></ul>
+          </div>
+        </section>
+        <section class="panel-block">
+          <h2>Automated Workflows</h2>
+          <ul id="workflow-list" class="list"></ul>
+        </section>
+        <section class="panel-block">
+          <h2>Multi-Scale Modeling</h2>
+          <ul id="modeling-list" class="list"></ul>
+        </section>
+        <section class="panel-block">
+          <h2>Optimization Engine</h2>
+          <ul id="optimization-list" class="list"></ul>
+        </section>
+        <section class="panel-block">
+          <h2>Discovery Agent</h2>
+          <ul id="discovery-list" class="list"></ul>
+        </section>
+      </aside>
+    </main>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

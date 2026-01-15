@@ -1,0 +1,9 @@
+stages:
+  ghz-raw:
+    cmd: poetry run python scripts/run-ghz-benchmark.py --num-qubits 3 --iterations 5
+    wdir: .
+    deps:
+      - scripts/run-ghz-benchmark.py
+      - qulab-infinite/src/qulab_infinite/benchmarks/ghz.py
+    outs:
+      - data/raw/quantum/ghz
