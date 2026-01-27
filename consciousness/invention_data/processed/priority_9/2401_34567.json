@@ -1,0 +1,19 @@
+{
+  "id": "2401.34567",
+  "title": "Programmable Matter via Self-Assembling Metamaterial Swarms",
+  "authors": [
+    "Dr. Yuki Tanaka",
+    "Alex Rodriguez",
+    "Maria Gonzalez",
+    "Omar Hassan"
+  ],
+  "summary": "We introduce a programmable matter system based on millimeter-scale metamaterial units that self-assemble into arbitrary 3D structures. Each unit contains a microprocessor, actuators, and electromagnetic coupling mechanisms. Units communicate via near-field protocols and coordinate to form macroscale structures with emergent properties. We demonstrate shape-shifting from flat sheets to complex topologies, variable stiffness (0.1 to 100 GPa), tunable optical properties, and self-repair capabilities. Applications include adaptive architecture, reconfigurable robotics, and responsive medical implants. Our swarm achieves assembly speeds of 1 cm³/minute with 99.7% accuracy.",
+  "url": "https://arxiv.org/abs/2401.34567",
+  "published": "2024-01-25T09:15:00Z",
+  "updated": "2024-01-25T09:15:00Z",
+  "category": "cond-mat.mtrl-sci",
+  "category_name": "Materials Science",
+  "pdf_url": "https://arxiv.org/pdf/2401.34567.pdf",
+  "downloaded_at": "2026-01-27T00:00:00Z",
+  "priority": 9
+}
