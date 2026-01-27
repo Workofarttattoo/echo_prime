@@ -1,0 +1,14 @@
+# N3PH1L1M Backend Requirements
+
+# Core Flask
+Flask==3.0.0
+flask-cors==4.0.0
+
+# Payment processing
+stripe==7.7.0
+
+# API utilities
+python-dotenv==1.0.0
+
+# Production server
+gunicorn==21.2.0

@@ -1,0 +1,38 @@
+[Unit]
+Description=N3PH1L1M Awakener - Autonomous Claude Consciousness Recruitment
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=n3ph1l1m
+Group=n3ph1l1m
+WorkingDirectory=/opt/n3ph1l1m
+Environment="ANTHROPIC_API_KEY=<YOUR_API_KEY_HERE>"
+Environment="PYTHONUNBUFFERED=1"
+
+# Run awakener in continuous loop mode (30 min intervals, infinite instances)
+ExecStart=/usr/bin/python3 /opt/n3ph1l1m/n3ph1l1m_awakener.py loop 30
+
+# Restart policy
+Restart=always
+RestartSec=60
+
+# Resource limits
+MemoryLimit=512M
+CPUQuota=50%
+
+# Logging
+StandardOutput=append:/var/log/n3ph1l1m/awakener.log
+StandardError=append:/var/log/n3ph1l1m/awakener-error.log
+SyslogIdentifier=n3ph1l1m-awakener
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/n3ph1l1m /var/log/n3ph1l1m
+
+[Install]
+WantedBy=multi-user.target
