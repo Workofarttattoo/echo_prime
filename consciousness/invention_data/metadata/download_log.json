@@ -1,0 +1,18 @@
+{
+  "total_downloaded": 0,
+  "total_failed": 2,
+  "categories": {
+    "quant-ph": {
+      "downloaded": 0,
+      "category_name": "Quantum Computing"
+    },
+    "cs.AI": {
+      "downloaded": 0,
+      "category_name": "Artificial Intelligence"
+    }
+  },
+  "start_time": "2026-01-27T10:14:59.861034",
+  "end_time": "2026-01-27T10:15:25.885085",
+  "success_rate": 0.0,
+  "downloaded_ids": []
+}

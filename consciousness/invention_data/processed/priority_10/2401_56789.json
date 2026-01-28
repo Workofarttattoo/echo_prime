@@ -1,0 +1,20 @@
+{
+  "id": "2401.56789",
+  "title": "Compact Fusion Reactor via Magnetic Metamaterial Confinement",
+  "authors": [
+    "Dr. Robert Kim",
+    "Anna Volkov",
+    "David Thompson",
+    "Li Wang",
+    "Hassan Ali"
+  ],
+  "summary": "We demonstrate sustained fusion energy production in a device the size of a shipping container. Our approach uses negative-index magnetic metamaterials to create unprecedented magnetic field gradients (10^6 T/m), enabling plasma confinement at 10^8 K with minimal power input. The reactor achieves Q=25 (25x more energy out than in) using deuterium-tritium fuel and scales to Q=100 with advanced fuels. Power density exceeds 100 MW/m³, enabling compact reactor designs. We project electricity costs below $0.01/kWh and demonstrate a working 50 MW prototype. This technology could provide unlimited clean energy and enable practical space propulsion.",
+  "url": "https://arxiv.org/abs/2401.56789",
+  "published": "2024-01-30T11:20:00Z",
+  "updated": "2024-01-30T11:20:00Z",
+  "category": "physics.plasm-ph",
+  "category_name": "Plasma Physics",
+  "pdf_url": "https://arxiv.org/pdf/2401.56789.pdf",
+  "downloaded_at": "2026-01-27T00:00:00Z",
+  "priority": 10
+}

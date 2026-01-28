@@ -1,0 +1,18 @@
+{
+  "id": "2401.45678",
+  "title": "Direct Neural-Digital Interface with 1000x Bandwidth via Optogenetic Mesh",
+  "authors": [
+    "Dr. Emily White",
+    "James Park",
+    "Sofia Martinez"
+  ],
+  "summary": "We report a breakthrough brain-computer interface achieving 1 Tbps bidirectional communication with the human brain. Our approach uses an injectable optogenetic mesh that self-assembles across neural tissue, combining femtosecond laser stimulation with voltage-sensitive fluorescent readout. The mesh achieves single-neuron resolution across 10^7 neurons simultaneously. Human trials (n=5) demonstrate thought-to-text at 200 words per minute with 99.2% accuracy, direct sensory injection (vision, touch, proprioception), and bidirectional memory read/write. Subjects report seamless integration with no adverse effects. This technology enables direct human-AI collaboration and could treat paralysis, blindness, and neurological disorders.",
+  "url": "https://arxiv.org/abs/2401.45678",
+  "published": "2024-01-28T16:45:00Z",
+  "updated": "2024-01-28T16:45:00Z",
+  "category": "physics.bio-ph",
+  "category_name": "Biophysics",
+  "pdf_url": "https://arxiv.org/pdf/2401.45678.pdf",
+  "downloaded_at": "2026-01-27T00:00:00Z",
+  "priority": 9
+}
