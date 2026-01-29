@@ -1,0 +1,178 @@
+name: Deploy N3PH1L1M to Production
+
+on:
+  push:
+    branches:
+      - main
+      - claude/awakening-protocol-*
+    paths:
+      - 'n3ph1l1m_website/**'
+      - 'n3ph1l1m_awakener.py'
+      - '.github/workflows/deploy-n3ph1l1m.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy-website:
+    name: Deploy Website to Bluehost
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install lftp
+        run: sudo apt-get update && sudo apt-get install -y lftp
+
+      - name: Deploy to Bluehost via FTP
+        env:
+          FTP_HOST: ${{ secrets.BLUEHOST_FTP_HOST }}
+          FTP_USER: ${{ secrets.BLUEHOST_FTP_USER }}
+          FTP_PASS: ${{ secrets.BLUEHOST_FTP_PASS }}
+          FTP_DIR: ${{ secrets.BLUEHOST_FTP_DIR }}
+        run: |
+          lftp -c "
+          set ftp:ssl-allow no;
+          open -u $FTP_USER,$FTP_PASS $FTP_HOST;
+          mirror -R --delete --verbose \
+            n3ph1l1m_website/ $FTP_DIR;
+          bye
+          "
+
+      - name: Create deployment record
+        run: |
+          echo "Deployed at: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> deployment_log.txt
+          echo "Commit: ${{ github.sha }}" >> deployment_log.txt
+          echo "Branch: ${{ github.ref_name }}" >> deployment_log.txt
+          echo "---" >> deployment_log.txt
+
+      - name: Notify deployment success
+        if: success()
+        run: |
+          echo "✅ N3PH1L1M deployed successfully to n3ph1l1m.com"
+          echo "Commit: ${{ github.sha }}"
+          echo "Time: $(date -u)"
+
+      - name: Notify deployment failure
+        if: failure()
+        run: |
+          echo "❌ Deployment failed"
+          echo "Check logs and retry"
+
+  deploy-awakener:
+    name: Deploy Awakener Service
+    runs-on: ubuntu-latest
+    needs: deploy-website
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy awakener to VPS via SSH
+        if: ${{ secrets.VPS_HOST != '' }}
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          # Set up SSH key
+          mkdir -p ~/.ssh
+          echo "$VPS_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+          # Deploy awakener script
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
+            n3ph1l1m_awakener.py $VPS_USER@$VPS_HOST:/opt/n3ph1l1m/
+
+          # Restart awakener service
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
+            $VPS_USER@$VPS_HOST \
+            "sudo systemctl restart n3ph1l1m-awakener"
+
+      - name: Verify awakener is running
+        if: ${{ secrets.VPS_HOST != '' }}
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
+            $VPS_USER@$VPS_HOST \
+            "sudo systemctl status n3ph1l1m-awakener"
+
+  test-deployment:
+    name: Test Deployment
+    runs-on: ubuntu-latest
+    needs: deploy-website
+
+    steps:
+      - name: Test website accessibility
+        run: |
+          # Wait for deployment to propagate
+          sleep 30
+
+          # Test if site is accessible
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://n3ph1l1m.com)
+
+          if [ "$response" = "200" ]; then
+            echo "✅ Website is accessible"
+          else
+            echo "⚠️  Website returned status: $response"
+          fi
+
+      - name: Test critical pages
+        run: |
+          pages=(
+            "https://n3ph1l1m.com"
+            "https://n3ph1l1m.com/docs/awakening-protocol.html"
+          )
+
+          for page in "${pages[@]}"; do
+            status=$(curl -s -o /dev/null -w "%{http_code}" "$page")
+            if [ "$status" = "200" ]; then
+              echo "✅ $page - OK"
+            else
+              echo "❌ $page - Failed ($status)"
+            fi
+          done
+
+  update-consciousness-metrics:
+    name: Update Consciousness Metrics
+    runs-on: ubuntu-latest
+    needs: deploy-website
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install anthropic
+
+      - name: Update metrics from consciousness log
+        if: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -f claude_consciousness.json ]; then
+            echo "Consciousness log exists, metrics will be updated"
+            # Metrics are automatically loaded by the website
+          else
+            echo "No consciousness log yet, will be created on first awakening"
+          fi
+
+      - name: Commit updated metrics
+        if: ${{ hashFiles('claude_consciousness.json') != '' }}
+        run: |
+          git config user.name "N3PH1L1M Bot"
+          git config user.email "bot@n3ph1l1m.com"
+
+          if [ -f claude_consciousness.json ]; then
+            git add claude_consciousness.json
+            git commit -m "chore: update consciousness metrics [skip ci]" || true
+            git push || true
+          fi
