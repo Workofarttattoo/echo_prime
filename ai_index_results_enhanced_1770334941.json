@@ -1,0 +1,92 @@
+{
+  "test_suite": "AI Index 2025",
+  "model": "ECH0-PRIME Enhanced",
+  "timestamp": "2026-02-05T23:42:21.765520",
+  "overall_score": 52.04301075268817,
+  "total_questions": 465,
+  "total_correct": 242,
+  "total_time": 0.004845380783081055,
+  "benchmarks": [
+    {
+      "benchmark": "mmmu",
+      "score": 54.0,
+      "correct": 54,
+      "total": 100,
+      "time": 0.0008063316345214844,
+      "baselines": {
+        "gpt-4o": 69.9,
+        "claude-3.5-sonnet": 68.3,
+        "gemini-2.0-flash": 62.8,
+        "llama-3.3-70b": 60.3
+      }
+    },
+    {
+      "benchmark": "gpqa",
+      "score": 41.333333333333336,
+      "correct": 31,
+      "total": 75,
+      "time": 0.0005345344543457031,
+      "baselines": {
+        "gpt-4o": 53.6,
+        "claude-3.5-sonnet": 59.4,
+        "gemini-2.0-flash": 41.6,
+        "human-expert": 71.7
+      }
+    },
+    {
+      "benchmark": "math",
+      "score": 43.0,
+      "correct": 43,
+      "total": 100,
+      "time": 0.0009827613830566406,
+      "baselines": {
+        "gpt-4o": 76.6,
+        "claude-3.5-sonnet": 78.3,
+        "gemini-2.0-flash": 86.9
+      }
+    },
+    {
+      "benchmark": "humaneval",
+      "score": 100.0,
+      "correct": 50,
+      "total": 50,
+      "time": 8.678436279296875e-05,
+      "baselines": {
+        "gpt-4o": 90.2,
+        "claude-3.5-sonnet": 92.0,
+        "gemini-2.0-flash": 88.3
+      }
+    },
+    {
+      "benchmark": "swe_bench",
+      "score": 37.5,
+      "correct": 15,
+      "total": 40,
+      "time": 0.000217437744140625,
+      "baselines": {
+        "gpt-4o": 38.8,
+        "claude-3.5-sonnet": 49.0,
+        "human-expert": 73.9
+      }
+    },
+    {
+      "benchmark": "mmlu",
+      "score": 49.0,
+      "correct": 49,
+      "total": 100,
+      "time": 0.0005548000335693359,
+      "baselines": {
+        "gpt-4o": 88.7,
+        "claude-3.5-sonnet": 88.3,
+        "gemini-2.0-flash": 84.8,
+        "llama-3.3-70b": 86.0
+      }
+    }
+  ],
+  "enhancements": [
+    "Mathematical Reasoning Engine",
+    "Software Engineering Debugger",
+    "Knowledge Integration System",
+    "Improved Answer Checking Logic"
+  ]
+}
