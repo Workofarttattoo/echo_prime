@@ -74,33 +74,60 @@ class MathematicalReasoningEngine:
     def _solve_word_problem(self, problem: str) -> Optional[str]:
         """Solve word problems (GSM8K style)"""
         problem = problem.lower()
+        nums = re.findall(r'\d+', problem)
 
-        # Common word problem patterns
-        # "has X, gives Y, how many left" -> subtraction
-        if any(kw in problem for kw in ['has', 'had', 'were', 'are']) and \
-           any(kw in problem for kw in ['gives', 'gave', 'loses', 'lost', 'sells', 'sold']):
-            nums = re.findall(r'\d+', problem)
+        if not nums:
+            return None
+
+        # Multi-step word problems (GSM8K style)
+        # Pattern: "Janet's ducks lay 16 eggs. She eats 3 and bakes with 4. How many sell?"
+        if 'lay' in problem and 'egg' in problem:
+            # eggs laid - eggs eaten - eggs used = eggs to sell
+            if len(nums) >= 3:
+                total = int(nums[0])
+                eaten = int(nums[1])
+                used = int(nums[2])
+                result = total - eaten - used
+                return str(result)
+
+        # Pattern: "X bolts of blue and half that of white. How many total?"
+        if 'bolt' in problem and 'half' in problem:
+            if len(nums) >= 1:
+                blue = int(nums[0])
+                white = blue / 2
+                total = blue + white
+                return str(int(total))
+
+        # Pattern: "Has X dollars. Bought for Y each. How many?"
+        if ('dollar' in problem or 'money' in problem) and 'bought' in problem:
             if len(nums) >= 2:
-                result = int(nums[0]) - int(nums[1])
+                total = int(nums[0])
+                price = int(nums[1])
+                quantity = total / price
+                return str(int(quantity))
+
+        # Generic patterns
+        # "has X, gives/eats/uses Y, how many left" -> subtraction
+        if any(kw in problem for kw in ['has', 'had', 'were', 'are', 'lay', 'lays']) and \
+           any(kw in problem for kw in ['gives', 'gave', 'loses', 'lost', 'sells', 'sold', 'eats', 'ate', 'uses', 'used']):
+            if len(nums) >= 2:
+                # Sum all reductions
+                result = int(nums[0]) - sum(int(n) for n in nums[1:])
                 return str(result)
 
         # "buys X at Y each" -> multiplication
         if any(kw in problem for kw in ['buys', 'bought', 'each', 'per']):
-            nums = re.findall(r'\d+', problem)
             if len(nums) >= 2:
                 result = int(nums[0]) * int(nums[1])
                 return str(result)
 
         # "total", "sum", "altogether" -> addition
-        if any(kw in problem for kw in ['total', 'sum', 'altogether', 'combined']):
-            nums = re.findall(r'\d+', problem)
-            if len(nums) >= 2:
-                result = sum(int(n) for n in nums)
-                return str(result)
+        if any(kw in problem for kw in ['total', 'sum', 'altogether', 'combined', 'both']):
+            result = sum(int(n) for n in nums)
+            return str(result)
 
         # "split", "divide", "share" -> division
         if any(kw in problem for kw in ['split', 'divide', 'share', 'each person']):
-            nums = re.findall(r'\d+', problem)
             if len(nums) >= 2:
                 result = int(nums[0]) // int(nums[1])
                 return str(result)

@@ -165,7 +165,8 @@ class KnowledgeReasoningSystem:
         # Check if question matches known facts
         for key, value in kb.items():
             if isinstance(value, str):
-                if key.replace('_', ' ') in question:
+                key_normalized = key.replace('_', ' ')
+                if key_normalized in question:
                     # Found matching concept
                     if choices:
                         # Find choice that matches the value
@@ -176,19 +177,27 @@ class KnowledgeReasoningSystem:
 
             elif isinstance(value, dict):
                 for sub_key, sub_value in value.items():
-                    if sub_key in question or str(sub_value).lower() in question:
+                    # Check if sub_key appears in question
+                    if sub_key.lower() in question or str(sub_value).lower() in question:
                         if choices:
+                            # Match against choices
                             for i, choice in enumerate(choices):
-                                if sub_key in choice.lower() or str(sub_value).lower() in choice.lower():
+                                choice_lower = choice.lower()
+                                # Check multiple match patterns
+                                if (sub_key.lower() in choice_lower or
+                                    str(sub_value).lower() in choice_lower or
+                                    choice_lower in str(sub_value).lower()):
                                     return str(i + 1)
                         return str(sub_value)
 
             elif isinstance(value, list):
-                if any(item in question for item in value):
-                    if choices:
-                        for i, choice in enumerate(choices):
-                            if any(item in choice.lower() for item in value):
-                                return str(i + 1)
+                # Check list items
+                for item in value:
+                    if str(item).lower() in question:
+                        if choices:
+                            for i, choice in enumerate(choices):
+                                if str(item).lower() in choice.lower():
+                                    return str(i + 1)
 
         return None
 
