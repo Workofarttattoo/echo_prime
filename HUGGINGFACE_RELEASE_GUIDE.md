@@ -39,8 +39,8 @@ Visit https://huggingface.co/ech0/ECH0-PRIME and verify:
 # Run comprehensive benchmarks
 python3 ai_benchmark_suite.py --benchmarks arc_easy gsm8k --compare --samples 10
 
-# Submit to leaderboards
-python3 online_benchmark_submission.py --leaderboard all --announce
+# Prepare community benchmark submission packet
+python3 online_benchmark_submission.py --target all --announce
 ```
 
 ### Step 6: Announce to the World

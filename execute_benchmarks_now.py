@@ -107,7 +107,7 @@ def main():
     print("\n🚀 NEXT STEPS:")
     print("1. Review benchmark results above")
     print("2. Upload to HuggingFace: ./setup_huggingface_repo.sh")
-    print("3. Submit to leaderboards: python3 online_benchmark_submission.py")
+    print("3. Prepare benchmark submissions: python3 online_benchmark_submission.py --target all --announce")
     print("4. Contact investors with concrete metrics")
     print("5. Prepare press release and social media announcements")
 

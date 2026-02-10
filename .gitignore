@@ -53,6 +53,7 @@ env/
 benchmark_results_*.json
 benchmark_execution_summary.json
 *_results.json
+benchmark_results/community_submissions/
 backups/
 checkpoints/
 datasets/
