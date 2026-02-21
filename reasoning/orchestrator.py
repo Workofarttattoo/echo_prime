@@ -90,6 +90,13 @@ class ReasoningOrchestrator:
         from reasoning.metacognition import MetacognitiveCritic
         self.critic = MetacognitiveCritic(self.llm_bridge) if self.llm_bridge else None
 
+        # Load Protected Identity (Cached for performance)
+        identity_path = os.path.join(os.path.dirname(__file__), "IDENTITY.txt")
+        self.identity = "You are ECH0-PRIME."
+        if os.path.exists(identity_path):
+            with open(identity_path, "r") as f:
+                self.identity = f.read()
+
     def set_goal(self, goal: str):
         """Sets a long-term autonomous mission."""
         self.current_goal = goal
@@ -152,12 +159,8 @@ class ReasoningOrchestrator:
         # Inject dynamic tool schemas from MCP registry
         tool_schemas = json.dumps(ToolRegistry.get_schemas(), indent=2)
         
-        # Load Protected Identity
-        identity_path = os.path.join(os.path.dirname(__file__), "IDENTITY.txt")
-        identity = "You are ECH0-PRIME."
-        if os.path.exists(identity_path):
-            with open(identity_path, "r") as f:
-                identity = f.read()
+        # Load Protected Identity (from cache)
+        identity = self.identity
 
         # APPLY ECHO PRIME / RESONANCE to the system prompt
         system_base = f"{identity}\n{retrieved_context}\n"
