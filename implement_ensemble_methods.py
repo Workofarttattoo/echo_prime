@@ -146,13 +146,13 @@ async def implement_ensemble_methods():
     
     elapsed = time.time() - start_time
     
-    print("
-📊 ENSEMBLE METHODS IMPLEMENTATION COMPLETE"    print(f"  ⏱️  Total time: {elapsed:.2f} seconds")
+    print("\n📊 ENSEMBLE METHODS IMPLEMENTATION COMPLETE")
+    print(f"  ⏱️  Total time: {elapsed:.2f} seconds")
     print(f"  🧠 Ensemble reasoner: {len(reasoner.strategies)} strategies loaded")
     print(f"  🎯 Meta-learning: {len(adapter.task_patterns)} task patterns")
     print(f"  🎓 Active learning: {len(active_learner.difficulty_metrics)} domains tracked")
     print(f"  📚 Curriculum: {len(curriculum.learning_stages)} learning stages")
-    print("  💾 Configuration saved to optimization_state/ensemble_methods_config.json"
+    print("  💾 Configuration saved to optimization_state/ensemble_methods_config.json")
     return True
 
 async def demonstrate_ensemble_capabilities():
@@ -171,10 +171,12 @@ async def demonstrate_ensemble_capabilities():
     
     result = await reasoner.ensemble_reason(legal_question, "legal", max_ensemble_size=4)
     
-    print("
-🎯 Ensemble Result:"    print(f"  Final Answer: {result.final_answer[:100]}...")
-    print(".2f"    print(f"  Method Used: {result.method_used}")
-    print(".2f"    print(f"  Strategies Used: {len(result.metadata.get('strategies_used', []))}")
+    print("\n🎯 Ensemble Result:")
+    print(f"  Final Answer: {result.final_answer[:100]}...")
+    print(f"  Confidence: {result.confidence_score:.2f}")
+    print(f"  Method Used: {result.method_used}")
+    print(f"  Consensus: {result.consensus_level:.2f}")
+    print(f"  Strategies Used: {len(result.metadata.get('strategies_used', []))}")
     print(f"  Reasoning Steps: {len(result.reasoning_steps)}")
     print(f"  Alternative Answers: {len(result.alternative_answers)}")
     

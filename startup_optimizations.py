@@ -67,8 +67,9 @@ def initialize_persistent_optimizations():
         elapsed = time.time() - start_time
         
         if all_ok:
-            print("
-🎉 PERSISTENT OPTIMIZATIONS SUCCESSFULLY INITIALIZED!"            print(".2f"            print("   All optimizations will persist across sessions.")
+            print("\n🎉 PERSISTENT OPTIMIZATIONS SUCCESSFULLY INITIALIZED!")
+            print(f"   ⏱️  Total time: {elapsed:.2f} seconds")
+            print("   All optimizations will persist across sessions.")
             return True
         else:
             print(f"\n⚠️ Some optimizations failed to initialize (took {elapsed:.2f}s)")
@@ -78,7 +79,7 @@ def initialize_persistent_optimizations():
     except Exception as e:
         elapsed = time.time() - start_time
         print(f"❌ Failed to initialize persistent optimizations: {e}")
-        print(".2f")
+        print(f"   ⏱️  Total time: {elapsed:.2f} seconds")
         return False
 
 def initialize_default_optimizations(pom):
