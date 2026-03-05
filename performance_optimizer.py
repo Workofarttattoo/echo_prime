@@ -159,12 +159,14 @@ class PerformanceOptimizer:
                 correct = sum(1 for r in hle_result if r.get("status") == "PASS")
                 accuracy = (correct / len(hle_result)) * 100
                 results["hle_test"] = accuracy
-                print(".1f")
+                print(f"  HLE Accuracy: {accuracy:.1f}%")
                 
                 improvement = accuracy - self.baseline_scores["hle"]
                 if improvement > 0:
-                    print(".1f"                elif improvement < 0:
-                    print(".1f"                else:
+                    print(f"  HLE: +{improvement:.1f}% improvement")
+                elif improvement < 0:
+                    print(f"  HLE: {improvement:.1f}% regression")
+                else:
                     print("  HLE: No change from baseline")
             
         except Exception as e:
@@ -191,8 +193,8 @@ class PerformanceOptimizer:
             baseline = self.baseline_scores["hle"]
             current = results["hle_test"]
             improvement = current - baseline
-            report.append(".1f")
-            report.append(".1f")
+            report.append(f"- HLE Test: {current:.1f}%")
+            report.append(f"- Improvement: {improvement:+.1f}%")
         else:
             report.append("- HLE Test: Failed to run")
         report.append("")
@@ -257,13 +259,13 @@ def main():
     with open("performance_optimization_report.md", "w") as f:
         f.write(report)
     
-    print("
-📊 Optimization Report Saved: performance_optimization_report.md"    
+    print("\n📊 Optimization Report Saved: performance_optimization_report.md")
+
     print("\n🎯 PERFORMANCE OPTIMIZATION COMPLETE!")
     print(f"Applied {success_count} optimizations successfully")
     
     if test_results.get("hle_test"):
-        print(".1f")
+        print(f"Final HLE Score: {test_results['hle_test']:.1f}%")
 
 if __name__ == "__main__":
     main()

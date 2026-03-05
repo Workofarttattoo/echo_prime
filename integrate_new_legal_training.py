@@ -64,15 +64,25 @@ def integrate_legal_training():
     
     elapsed = time.time() - start_time
     
-    print("
-📊 Integration Summary:"    print(f"  ✅ Datasets integrated: {len(integrated_datasets)}")
+    print("\n📊 Integration Summary:")
+    print(f"  ✅ Datasets integrated: {len(integrated_datasets)}")
     print(f"  ✅ Training examples: {total_examples}")
     print(f"  ✅ Domain strategies: {len(configured_domains)} configured")
-    print(".2f"    
-    print("
-🔍 New Legal Capabilities Added:"    print("  • Bad Faith Insurance Law Analysis"    print("  • Federal Constitutional Law"    print("  • Federal Jurisdiction & Preemption"    print("  • UCC Article 2 Sales Contracts"    print("  • State-Federal Law Interactions"    print("
-💡 Next Steps:"    print("  1. Run fine-tuning with new legal datasets"    print("  2. Test legal reasoning capabilities"    print("  3. Validate domain-specific performance"    print("
-⚖️ ECH0-PRIME Legal Training Enhanced!"    
+    print(f"  ⏱️  Total time: {elapsed:.2f} seconds")
+
+    print("\n🔍 New Legal Capabilities Added:")
+    print("  • Bad Faith Insurance Law Analysis")
+    print("  • Federal Constitutional Law")
+    print("  • Federal Jurisdiction & Preemption")
+    print("  • UCC Article 2 Sales Contracts")
+    print("  • State-Federal Law Interactions")
+
+    print("\n💡 Next Steps:")
+    print("  1. Run fine-tuning with new legal datasets")
+    print("  2. Test legal reasoning capabilities")
+    print("  3. Validate domain-specific performance")
+
+    print("\n⚖️ ECH0-PRIME Legal Training Enhanced!")
     return True
 
 def validate_legal_knowledge():
