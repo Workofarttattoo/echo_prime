@@ -125,13 +125,10 @@ class AttentionPattern(nn.Module):
     
     def _hierarchical_mask(self, seq_len: int, device: torch.device) -> torch.Tensor:
         """Create hierarchical attention mask"""
-        mask = torch.ones(seq_len, seq_len, device=device)
-        
-        # Reduce attention for distant positions
-        for i in range(seq_len):
-            for j in range(seq_len):
-                distance = abs(i - j)
-                mask[i, j] = 1.0 / (1.0 + distance)
+        i = torch.arange(seq_len, device=device).unsqueeze(1)
+        j = torch.arange(seq_len, device=device).unsqueeze(0)
+        distance = torch.abs(i - j)
+        mask = 1.0 / (1.0 + distance)
         
         return mask.unsqueeze(0)
 
