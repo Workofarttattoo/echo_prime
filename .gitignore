@@ -118,3 +118,30 @@ bbb_real
 *.pt
 checkpoints/
 bbb_real
+
+# ===== Runtime State & Artifacts =====
+optimization_state/
+memory_data/*.npy
+memory_data/*.jsonl
+memory_data/semantic.json
+memory_data/*.bak
+checkpoints/
+*.pid
+*.err
+*.out
+
+# ===== Benchmark Results (generated, not source) =====
+*_results_*.json
+full_benchmark_results_*.json
+benchmark_comparison.png
+
+# ===== Generated Config/State =====
+budget_optimization_plan.json
+business_plan.json
+domain_strategies.json
+ech0_algorithm_catalog.json
+ech0_invention_run.json
+kairos_spaces_config.json
+kairos_system_config.json
+monetization_strategy.json
+user_profile.json
