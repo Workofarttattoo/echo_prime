@@ -66,10 +66,18 @@ def main():
     success = run_command(["chmod", "+x", "setup_huggingface_repo.sh"],
                          "Making setup script executable")
 
-    # 2. Run online benchmark submission
+    # 2. Build community benchmark onboarding packet
     if success:
-        success = run_command(["python3", "online_benchmark_submission.py", "--leaderboard", "all", "--announce"],
-                             "Submitting to online leaderboards")
+        success = run_command(
+            [
+                "python3",
+                "online_benchmark_submission.py",
+                "--target",
+                "all",
+                "--announce",
+            ],
+            "Preparing community benchmark submission packet",
+        )
 
     # 3. Run benchmark demo
     if success:
