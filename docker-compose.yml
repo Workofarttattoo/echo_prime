@@ -1,0 +1,28 @@
+# ECH0-PRIME Docker Compose
+# Copyright (c) 2025 Joshua Hendricks Cole (DBA: Corporation of Light). All Rights Reserved. PATENT PENDING.
+
+services:
+  echo-prime:
+    build: .
+    ports:
+      - "7860:7860"   # HuggingFace/Gradio
+      - "8000:8000"   # Dashboard API
+    volumes:
+      - ./memory_data:/app/memory_data
+      - ./checkpoints:/app/checkpoints
+      - ./sensory_input:/app/sensory_input
+    env_file:
+      - .env
+    environment:
+      - ECH0_PHASE=2
+      - ECH0_LIGHTWEIGHT=0
+    restart: unless-stopped
+
+  dashboard:
+    build: .
+    command: python dashboard_server.py
+    ports:
+      - "8080:8000"
+    env_file:
+      - .env
+    restart: unless-stopped
