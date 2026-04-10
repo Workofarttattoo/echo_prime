@@ -7,10 +7,6 @@ Core modules for hierarchical generative models, attention mechanisms, and senso
 
 from .engine import HierarchicalGenerativeModel, FreeEnergyEngine, GlobalWorkspace
 from .attention import QuantumAttentionHead, CoherenceShaper
-from .vision_bridge import VisionBridge
-from .audio_bridge import AudioBridge
-from .voice_bridge import VoiceBridge
-from .actuator import ActuatorBridge
 
 __all__ = [
     'HierarchicalGenerativeModel',
@@ -18,8 +14,28 @@ __all__ = [
     'GlobalWorkspace',
     'QuantumAttentionHead',
     'CoherenceShaper',
-    'VisionBridge',
-    'AudioBridge',
-    'VoiceBridge',
-    'ActuatorBridge'
 ]
+
+try:
+    from .vision_bridge import VisionBridge
+    __all__.append('VisionBridge')
+except ImportError:
+    pass
+
+try:
+    from .audio_bridge import AudioBridge
+    __all__.append('AudioBridge')
+except ImportError:
+    pass
+
+try:
+    from .voice_bridge import VoiceBridge
+    __all__.append('VoiceBridge')
+except ImportError:
+    pass
+
+try:
+    from .actuator import ActuatorBridge
+    __all__.append('ActuatorBridge')
+except ImportError:
+    pass
