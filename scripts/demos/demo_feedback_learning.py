@@ -147,7 +147,7 @@ async def demo_feedback_learning():
     print(f"Total feedback received: {total_feedback}")
     print(f"Feedback processed: {processed_feedback}")
     print(f"Successful adaptations: {improvements}")
-    print(".1f"    if improvements > 0:
+    if improvements > 0:
         print("🎉 System successfully learned and adapted from feedback!")
     else:
         print("📚 System is still learning from the feedback...")

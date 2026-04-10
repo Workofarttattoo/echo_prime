@@ -19,7 +19,7 @@ try:
 except ImportError:
     # Fallback for direct execution
     import sys
-    sys.path.append('/Users/noone/echo_prime')
+    sys.path.append(os.environ.get('ECH0_ROOT', os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
     from infrastructure.aios_algorithms import (
         AIOSKernel, create_ai_task, TaskPriority, ResourceType,
         AIFairScheduler, AIWorkStealingScheduler, AIResourceAllocator

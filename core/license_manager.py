@@ -93,7 +93,7 @@ class LicenseManager:
 
         # Create license string with HMAC signature
         license_json = json.dumps(license_data, sort_keys=True)
-        secret_key = "ECH0-PRIME-LICENSE-SECRET-KEY-2025"  # CHANGE THIS IN PRODUCTION
+        secret_key = os.environ.get("ECH0_LICENSE_SECRET", "CHANGE-ME-IN-PRODUCTION")
 
         signature = hmac.new(secret_key.encode(), license_json.encode(), hashlib.sha256).hexdigest()
         license_key = base64.urlsafe_b64encode(f"{license_json}:{signature}".encode()).decode()
@@ -142,7 +142,7 @@ class LicenseManager:
             license_json, signature = license_content.split(":", 1)
 
             # Verify signature
-            secret_key = "ECH0-PRIME-LICENSE-SECRET-KEY-2025"
+            secret_key = os.environ.get("ECH0_LICENSE_SECRET", "CHANGE-ME-IN-PRODUCTION")
             expected_signature = hmac.new(secret_key.encode(), license_json.encode(), hashlib.sha256).hexdigest()
 
             if not hmac.compare_digest(signature, expected_signature):
@@ -166,7 +166,8 @@ class LicenseManager:
             self.license_data = license_data
             self._save_license()
 
-            print("✅ License activated successfully"            print(f"   Type: {license_data['license_type']}")
+            print("✅ License activated successfully")
+            print(f"   Type: {license_data['license_type']}")
             print(f"   Valid until: {license_data['valid_until']}")
             print(f"   Features: {', '.join([k for k, v in license_data['features'].items() if v])}")
 

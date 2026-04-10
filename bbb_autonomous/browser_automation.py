@@ -120,7 +120,8 @@ class BBBBrowserAutomation:
 
             # Note: In real implementation, this would handle login and campaign creation
             # For now, we'll simulate the process
-            print("📢 Simulating Facebook ad campaign creation..."            print(f"   Campaign: {campaign_config.get('name', 'BBB Campaign')}")
+            print("📢 Simulating Facebook ad campaign creation...")
+            print(f"   Campaign: {campaign_config.get('name', 'BBB Campaign')}")
             print(f"   Budget: ${campaign_config.get('budget', 0)}")
             print(f"   Target: {campaign_config.get('target_audience', 'General')}")
 
@@ -153,7 +154,8 @@ class BBBBrowserAutomation:
             # Navigate to Google Ads
             driver.get("https://ads.google.com")
 
-            print("📢 Simulating Google Ads campaign creation..."            print(f"   Campaign: {campaign_config.get('name', 'BBB Campaign')}")
+            print("📢 Simulating Google Ads campaign creation...")
+            print(f"   Campaign: {campaign_config.get('name', 'BBB Campaign')}")
             print(f"   Keywords: {campaign_config.get('keywords', [])}")
             print(f"   Budget: ${campaign_config.get('budget', 0)}")
 

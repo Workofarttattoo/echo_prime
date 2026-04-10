@@ -70,8 +70,8 @@ def chat(user_msg: str, history: list):
 # ------------------------------------------------------------
 with gr.Blocks() as demo:
     gr.Markdown(
-        """# 🤖 ECH0‑PRIME – Autonomous AGI Demo\n"
-        "*Powered by the 34B Together model (or any model you set via `HF_SPACE_MODEL`).*\n"
+        "# 🤖 ECH0‑PRIME – Autonomous AGI Demo\n\n"
+        "*Powered by the 34B Together model (or any model you set via `HF_SPACE_MODEL`).*\n\n"
         "Ask it to run simulations, fetch papers, or just chat!"
     )
     chatbot = gr.Chatbot()

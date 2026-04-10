@@ -3,7 +3,7 @@ import os
 import numpy as np
 
 # Add the project root to sys.path
-sys.path.append('/Users/noone/.gemini/antigravity/scratch/echo_prime')
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from reasoning.orchestrator import ReasoningOrchestrator
 

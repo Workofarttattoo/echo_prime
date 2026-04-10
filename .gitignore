@@ -1,7 +1,10 @@
+# ===========================================================================
 # ECH0-PRIME .gitignore
-# Copyright (c) 2025 Joshua Hendricks Cole (DBA: Corporation of Light). All Rights Reserved. PATENT PENDING.
+# Copyright (c) 2025 Joshua Hendricks Cole (DBA: Corporation of Light).
+# All Rights Reserved. PATENT PENDING.
+# ===========================================================================
 
-# ===== Environment & Secrets =====
+# ── Secrets & Environment ─────────────────────────────────────────────────
 .env
 .env.local
 .env.*.local
@@ -9,7 +12,7 @@
 *.pem
 credentials.json
 
-# ===== Python =====
+# ── Python ────────────────────────────────────────────────────────────────
 __pycache__/
 *.py[cod]
 *$py.class
@@ -34,25 +37,43 @@ share/python-wheels/
 *.egg
 MANIFEST
 
-# ===== Virtual Environments =====
+# ── Virtual Environments ─────────────────────────────────────────────────
 venv/
+.venv/
 ENV/
 env/
-.venv
 
-# ===== IDEs & Editors =====
+# ── IDEs & Editors ───────────────────────────────────────────────────────
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
-.DS_Store
 
-# ===== ECH0-PRIME Specific =====
+# ── macOS ─────────────────────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ── Testing ───────────────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+.mypy_cache/
+
+# ── Jupyter ───────────────────────────────────────────────────────────────
+.ipynb_checkpoints
+
+# ── Node (dashboard) ─────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ── ECH0-PRIME Runtime State ─────────────────────────────────────────────
 .matplotlib_cache/
-benchmark_results_*.json
-benchmark_execution_summary.json
-*_results.json
 backups/
 checkpoints/
 datasets/
@@ -60,6 +81,9 @@ training_data/
 research_drop/
 massive_kb/
 compressed_kb/
+optimization_state/
+bbb_real/
+
 # Sensory input (may contain private images/audio)
 sensory_input/*.jpg
 sensory_input/*.png
@@ -72,13 +96,24 @@ audio_input/*.mp3
 memory_data/*.json
 memory_data/*.pkl
 memory_data/*.db
+memory_data/*.npy
+memory_data/*.jsonl
+memory_data/semantic.json
+memory_data/*.bak
 
-# Dashboard data (runtime state)
+# Dashboard runtime state
 dashboard/data/state.json
 
 # Generated audio
 *.wav
+*.mp3
 test_mic.wav
+
+# Large model/checkpoint files
+*.pt
+*.pth
+*.onnx
+*.safetensors
 
 # Log files
 *.log
@@ -87,55 +122,21 @@ logs/
 # Temporary files
 *.tmp
 *.temp
-visual_field_*.txt
-file_name
-
-# ===== Testing =====
-.pytest_cache/
-.coverage
-htmlcov/
-.tox/
-.hypothesis/
-
-# ===== Jupyter =====
-.ipynb_checkpoints
-
-# ===== macOS =====
-.DS_Store
-.AppleDouble
-.LSOverride
-
-# ===== Node (for dashboard) =====
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-# Large model/checkpoint files
-*.pt
-checkpoints/
-bbb_real
-# Large model/checkpoint files
-*.pt
-checkpoints/
-bbb_real
-
-# ===== Runtime State & Artifacts =====
-optimization_state/
-memory_data/*.npy
-memory_data/*.jsonl
-memory_data/semantic.json
-memory_data/*.bak
-checkpoints/
 *.pid
 *.err
 *.out
+visual_field_*.txt
+file_name
 
-# ===== Benchmark Results (generated, not source) =====
+# ── Benchmark Results (generated, not source) ────────────────────────────
+benchmark_results_*.json
+benchmark_execution_summary.json
+*_results.json
 *_results_*.json
 full_benchmark_results_*.json
 benchmark_comparison.png
 
-# ===== Generated Config/State =====
+# ── Generated Config / State ─────────────────────────────────────────────
 budget_optimization_plan.json
 business_plan.json
 domain_strategies.json
@@ -145,3 +146,4 @@ kairos_spaces_config.json
 kairos_system_config.json
 monetization_strategy.json
 user_profile.json
+dashboard_chat.log

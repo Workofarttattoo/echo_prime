@@ -256,7 +256,7 @@ class EchoPrimeAGI:
             print("✓ Distributed Swarm Intelligence initialized")
 
             # Hive mind collective intelligence
-            self.hive_mind = HiveMindOrchestrator(num_nodes=5, qulab_path="/Users/noone/QuLabInfinite")
+            self.hive_mind = HiveMindOrchestrator(num_nodes=5, qulab_path=os.environ.get("QULAB_PATH", os.path.join(os.path.dirname(os.path.abspath(__file__)), "external", "QuLabInfinite")))
             print("✓ Hive mind orchestrator initialized")
 
             # Self-modification system
@@ -382,7 +382,7 @@ class EchoPrimeAGI:
         # Ensure audio input directories exist for tests and runtime
         self.audio_input_dir = os.path.join(os.path.dirname(__file__), "audio_input")
         os.makedirs(self.audio_input_dir, exist_ok=True)
-        legacy_audio_dir = "/Users/noone/.gemini/antigravity/scratch/echo_prime/audio_input"
+        legacy_audio_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "audio_input")
         os.makedirs(legacy_audio_dir, exist_ok=True)
 
     def _load_user_profile(self):

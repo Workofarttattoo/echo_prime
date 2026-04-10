@@ -4,7 +4,7 @@ import numpy as np
 import time
 
 # Add project root to path
-sys.path.append('/Users/noone/.gemini/antigravity/scratch/echo_prime')
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from main_orchestrator import EchoPrimeAGI
 
@@ -26,7 +26,7 @@ def test_phase_5_autonomy():
     agi.execute_mission(mission, max_cycles=6)
     
     print("\n[Final System State Verification]")
-    if not os.path.exists('/Users/noone/.gemini/antigravity/scratch/echo_prime/temp_audit'):
+    if not os.path.exists(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'temp_audit')):
         print("SUCCESS: Target directory 'temp_audit' does not exist (Goal Achievement).")
     else:
         print("WARNING: Target directory 'temp_audit' still exists.")

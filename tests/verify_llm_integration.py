@@ -3,7 +3,7 @@ import os
 import json
 
 # Add project root to path
-sys.path.append('/Users/noone/.gemini/antigravity/scratch/echo_prime')
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from reasoning.llm_bridge import OllamaBridge
 from reasoning.orchestrator import ReasoningOrchestrator

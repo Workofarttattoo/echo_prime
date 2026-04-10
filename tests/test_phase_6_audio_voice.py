@@ -4,7 +4,7 @@ import numpy as np
 import time
 
 # Add project root to path
-sys.path.append('/Users/noone/.gemini/antigravity/scratch/echo_prime')
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from main_orchestrator import EchoPrimeAGI
 
@@ -19,7 +19,8 @@ def test_phase_6_audio_voice():
     
     # 2. Test Audio Interaction (Hearing)
     print("\n[Testing AGI Hearing]")
-    audio_file = '/Users/noone/.gemini/antigravity/scratch/echo_prime/audio_input/test_command.txt'
+    audio_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'audio_input', 'test_command.txt')
+    os.makedirs(os.path.dirname(audio_file), exist_ok=True)
     with open(audio_file, "w") as f:
         f.write("Scan the system for temporary files.")
     
