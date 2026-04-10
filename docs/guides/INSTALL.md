@@ -41,7 +41,7 @@ curl http://localhost:11434/api/tags
 
 ```bash
 # Navigate to project directory
-cd /Users/noone/echo_prime
+cd $HOME/echo_prime
 
 # Create virtual environment
 python3 -m venv venv

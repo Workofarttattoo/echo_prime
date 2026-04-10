@@ -20,5 +20,5 @@ echo ""
 
 # Start the server
 echo "🧠 Initializing 70B model backbone..."
-cd /Users/noone/echo_prime
+cd $HOME/echo_prime
 python dashboard_server.py
