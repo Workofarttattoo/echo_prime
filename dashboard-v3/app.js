@@ -1,5 +1,19 @@
 // ECH0-PRIME Dashboard Logic V3 (Live Backend)
 
+// Helper function to escape HTML special characters
+function escapeHTML(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>"']/g, function (m) {
+        return {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        }[m];
+    });
+}
+
 // 1. Navigation Controller (Unchanged)
 const navLinks = document.querySelectorAll('.nav-links li');
 const sections = document.querySelectorAll('.section');
@@ -30,7 +44,7 @@ async function initializeDashboard() {
         statusDiv.id = 'provider-status';
         statusDiv.innerHTML = `
             <div style="background: rgba(0, 242, 255, 0.1); border: 1px solid #00f2ff; border-radius: 8px; padding: 8px; margin-bottom: 10px; font-size: 12px;">
-                🤖 Connected to: <strong>${status.provider}</strong> (${status.performance})
+                🤖 Connected to: <strong>${escapeHTML(status.provider)}</strong> (${escapeHTML(status.performance)})
             </div>
         `;
 
@@ -107,7 +121,16 @@ async function sendMessage() {
         // Add AI response
         const aiMessage = document.createElement('div');
         aiMessage.className = 'message system';
-        aiMessage.innerHTML = data.response.replace(/\n/g, '<br>');
+
+        // Securely add text content line by line with breaks to handle newlines without innerHTML
+        const lines = data.response.split('\n');
+        lines.forEach((line, index) => {
+            aiMessage.appendChild(document.createTextNode(line));
+            if (index < lines.length - 1) {
+                aiMessage.appendChild(document.createElement('br'));
+            }
+        });
+
         chatMessages.appendChild(aiMessage);
 
         // Scroll to bottom
@@ -143,7 +166,7 @@ async function updateEvolutionUnits() {
         const evolutionLog = document.getElementById('evolution-log');
         if (evolutionLog) {
             const timestamp = new Date().toLocaleTimeString();
-            evolutionLog.innerHTML += `\n[${timestamp}] Evolution Units: ${evolutionUnits.toLocaleString()} | ${data.description.split('(')[0].trim()}`;
+            evolutionLog.innerHTML += `<br>[${escapeHTML(timestamp)}] Evolution Units: ${evolutionUnits.toLocaleString()} | ${escapeHTML(data.description.split('(')[0].trim())}`;
             evolutionLog.scrollTop = evolutionLog.scrollHeight;
         }
 
@@ -163,8 +186,8 @@ async function updateConsciousnessPhi() {
 
         document.getElementById('phi-value').textContent = data.phi.toFixed(2);
         document.getElementById('phi-display').innerHTML = `
-            <div>${data.phi.toFixed(4)}</div>
-            <div style="font-size: 12px; color: #a0a0a0;">${data.level}</div>
+            <div>${escapeHTML(data.phi.toFixed(4))}</div>
+            <div style="font-size: 12px; color: #a0a0a0;">${escapeHTML(data.level)}</div>
         `;
 
     } catch (err) {
@@ -215,12 +238,12 @@ async function updateAutonomousActivity() {
         const feed = document.getElementById('activity-feed');
         if (data.recent_activity && data.recent_activity.length > 0) {
             feed.innerHTML = data.recent_activity.slice(0, 20).map(activity => `
-                <div class="activity-item ${activity.type}">
+                <div class="activity-item ${escapeHTML(activity.type)}">
                     <div class="activity-header">
-                        <span class="activity-time">${activity.timestamp}</span>
-                        <span class="activity-category">${activity.category}</span>
+                        <span class="activity-time">${escapeHTML(activity.timestamp)}</span>
+                        <span class="activity-category">${escapeHTML(activity.category)}</span>
                     </div>
-                    <div class="activity-content">${activity.activity}</div>
+                    <div class="activity-content">${escapeHTML(activity.activity)}</div>
                 </div>
             `).join('');
         } else {
