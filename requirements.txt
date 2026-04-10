@@ -47,7 +47,9 @@ websockets>=11.0
 feedparser>=6.0.10
 psycopg2-binary>=2.9.9
 redis>=5.0.0
-opencv-python pymupdf langchain-text-splitters
+opencv-python
+pymupdf
+langchain-text-splitters
 
 # Vector Databases
 faiss-cpu>=1.7.4
