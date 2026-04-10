@@ -12,6 +12,7 @@ import time
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 load_dotenv()
+PROJECT_ROOT = os.environ.get("ECH0_ROOT", os.path.dirname(os.path.abspath(__file__)))
 
 from reasoning.llm_bridge import TogetherBridge
 from reasoning.orchestrator import ReasoningOrchestrator
@@ -65,7 +66,7 @@ async def get_autonomous_activity(limit: int = 50):
         activity_logs = []
 
         # Read BBB Infinite Vault log (business operations)
-        bbb_vault_log = "/Users/noone/echo_prime/bbb_infinite_vault.log"
+        bbb_vault_log = os.path.join(PROJECT_ROOT, "bbb_infinite_vault.log")
         if os.path.exists(bbb_vault_log):
             with open(bbb_vault_log, 'r') as f:
                 lines = f.readlines()[-limit:]
@@ -84,7 +85,7 @@ async def get_autonomous_activity(limit: int = 50):
                     })
 
         # Read BBB Live Operations log
-        bbb_live_log = "/Users/noone/echo_prime/bbb_live_operations.log"
+        bbb_live_log = os.path.join(PROJECT_ROOT, "bbb_live_operations.log")
         if os.path.exists(bbb_live_log):
             with open(bbb_live_log, 'r') as f:
                 lines = f.readlines()[-limit//2:]  # Take fewer from this log
@@ -102,7 +103,7 @@ async def get_autonomous_activity(limit: int = 50):
                     })
 
         # Read Autonomous Evolution log
-        evolution_log = "/Users/noone/echo_prime/autonomous_evolution.log"
+        evolution_log = os.path.join(PROJECT_ROOT, "autonomous_evolution.log")
         if os.path.exists(evolution_log):
             with open(evolution_log, 'r') as f:
                 lines = f.readlines()[-limit//2:]
@@ -206,7 +207,7 @@ async def get_mission_status():
     """Get current mission status and objectives for Joshua Cole"""
     try:
         # Load from user profile
-        with open('/Users/noone/echo_prime/user_profile.json', 'r') as f:
+        with open(os.path.join(PROJECT_ROOT, 'user_profile.json'), 'r') as f:
             profile = json.load(f)
 
         collaborative_goals = profile.get('collaborative_goals', [])

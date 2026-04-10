@@ -49,7 +49,7 @@ def simulate_benchmark_results():
     for competitor, accuracy in arc_easy_results['competitors'].items():
         diff = arc_easy_results['ech0_prime']['accuracy'] - accuracy
         status = "🟢 SUPERIOR" if diff > 5 else "🟡 COMPETITIVE" if diff > 0 else "🔴 INFERIOR"
-        print(".1f"    print()
+        # (print statement removed: was corrupted format string)
 
     # GSM8K Benchmark Results
     print("🔢 GSM8K BENCHMARK (Grade School Math)")
@@ -83,7 +83,7 @@ def simulate_benchmark_results():
     for competitor, accuracy in gsm8k_results['competitors'].items():
         diff = gsm8k_results['ech0_prime']['accuracy'] - accuracy
         status = "🟢 SUPERIOR" if diff > 10 else "🟢 SUPERIOR" if diff > 5 else "🟡 COMPETITIVE"
-        print(".1f"    print()
+        # (print statement removed: was corrupted format string)
 
     # Overall Assessment
     print("🎯 OVERALL BENCHMARK ASSESSMENT")
@@ -97,7 +97,7 @@ def simulate_benchmark_results():
     llama3_avg = (arc_easy_results['competitors']['llama3'] + gsm8k_results['competitors']['llama3']) / 2
 
     print("Average Performance Across Benchmarks:")
-    print(".1f"    print(".1f"    print(".1f"    print(".1f"    print(".1f"    print()
+    # (print statement removed: was corrupted format string)
 
     # Supremacy Analysis
     print("🏆 SUPREMACY ANALYSIS")
@@ -122,7 +122,7 @@ def simulate_benchmark_results():
         print(f"vs {competitor.upper()}: {superiority} SUPERIORITY ({avg_diff:.1f}% avg margin)")
 
     win_rate = (ech0_wins / total_comparisons) * 100
-    print(".1f"    print()
+    # (print statement removed: was corrupted format string)
 
     # Key Strengths
     print("💪 ECH0-PRIME KEY STRENGTHS")
@@ -177,8 +177,8 @@ def simulate_benchmark_results():
     with open('benchmark_demo_results.json', 'w') as f:
         json.dump(results_data, f, indent=2, default=str)
 
-    print("
-💾 Results saved to benchmark_demo_results.json"    return results_data
+    print("\n💾 Results saved to benchmark_demo_results.json")
+    return results_data
 
 if __name__ == "__main__":
     simulate_benchmark_results()

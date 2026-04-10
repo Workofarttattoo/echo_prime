@@ -1,28 +1,87 @@
-# ECH0-PRIME Docker Compose
-# Copyright (c) 2025 Joshua Hendricks Cole (DBA: Corporation of Light). All Rights Reserved. PATENT PENDING.
+# ===========================================================================
+# ECH0-PRIME Docker Compose — Production Stack
+# Copyright (c) 2025 Joshua Hendricks Cole (DBA: Corporation of Light).
+# All Rights Reserved. PATENT PENDING.
+# ===========================================================================
 
 services:
+  # --- Core cognitive engine (main orchestrator) ---
   echo-prime:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: echo-prime-core
     ports:
-      - "7860:7860"   # HuggingFace/Gradio
-      - "8000:8000"   # Dashboard API
+      - "${GRADIO_PORT:-7860}:7860"
     volumes:
       - ./memory_data:/app/memory_data
       - ./checkpoints:/app/checkpoints
       - ./sensory_input:/app/sensory_input
+      - ./logs:/app/logs
     env_file:
       - .env
     environment:
-      - ECH0_PHASE=2
-      - ECH0_LIGHTWEIGHT=0
+      ECH0_MODE: orchestrator
+      ECH0_PHASE: "${ECH0_PHASE:-2}"
+      ECH0_LIGHTWEIGHT: "${ECH0_LIGHTWEIGHT:-0}"
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+        reservations:
+          memory: 2G
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
+  # --- Dashboard + API server ---
   dashboard:
-    build: .
-    command: python dashboard_server.py
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: echo-prime-dashboard
     ports:
-      - "8080:8000"
+      - "${DASHBOARD_PORT:-8000}:8000"
     env_file:
       - .env
+    environment:
+      ECH0_MODE: dashboard
+      DASHBOARD_PORT: "8000"
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    depends_on:
+      echo-prime:
+        condition: service_started
+
+  # --- Redis (optional session / cache store) ---
+  redis:
+    image: redis:7-alpine
+    container_name: echo-prime-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  redis-data:

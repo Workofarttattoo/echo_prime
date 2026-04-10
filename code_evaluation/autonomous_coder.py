@@ -19,7 +19,7 @@ import re
 class AutonomousCoder:
     """Real autonomous code evaluation, improvement, and deployment system."""
 
-    def __init__(self, workspace_dir: str = "/Users/noone/echo_prime/code_evaluation"):
+    def __init__(self, workspace_dir: str = os.environ.get("ECH0_WORKSPACE", os.path.join(os.path.dirname(os.path.abspath(__file__))))):
         self.workspace = Path(workspace_dir)
         self.workspace.mkdir(exist_ok=True)
         self.current_repo: Optional[Path] = None

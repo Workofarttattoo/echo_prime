@@ -8,7 +8,7 @@ class QuLabBridge:
     Bridge to the QuLabInfinite scientific platform.
     Allows ECH0 to run experiments and retrieve validation data.
     """
-    def __init__(self, qulab_path: str = "/Users/noone/QuLabInfinite"):
+    def __init__(self, qulab_path: str = os.environ.get("QULAB_PATH", "external/QuLabInfinite")):
         self.qulab_path = qulab_path
         self.available = os.path.exists(qulab_path)
         if not self.available:

@@ -32,7 +32,7 @@ Examples:
 
     parser.add_argument(
         '--workspace',
-        default='/Users/noone/echo_prime/code_evaluation',
+        default=os.environ.get('ECH0_WORKSPACE', os.path.join(os.path.dirname(os.path.abspath(__file__)))),
         help='Workspace directory for cloning and evaluation'
     )
 
@@ -85,7 +85,8 @@ Examples:
         print(f"❌ Evaluation failed: {result['error']}")
         sys.exit(1)
 
-    print("\n✅ EVALUATION COMPLETE")    print(f"📦 Repository: {result['repo_url']}")
+    print("\n✅ EVALUATION COMPLETE")
+    print(f"📦 Repository: {result['repo_url']}")
     print(f"📁 Local Path: {result['local_path']}")
     print()
 

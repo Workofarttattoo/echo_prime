@@ -4,7 +4,7 @@ import numpy as np
 import time
 
 # Add project root to path
-sys.path.append('/Users/noone/.gemini/antigravity/scratch/echo_prime')
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from main_orchestrator import EchoPrimeAGI
 
@@ -34,7 +34,7 @@ def test_phase_4_closed_loop():
         print(f"Actuator Feedback: {res}")
         
     # Verify file system change
-    if os.path.exists('/Users/noone/.gemini/antigravity/scratch/echo_prime/agi_log'):
+    if os.path.exists(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'agi_log')):
         print("\nSUCCESS: AGI successfully performed a system action (mkdir agi_log).")
     else:
         print("\nFAILURE: Directory 'agi_log' was not created.")

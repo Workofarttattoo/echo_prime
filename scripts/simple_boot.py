@@ -39,7 +39,7 @@ def boot_step_by_step():
         from memory.manager import MemoryManager
 
         step1_time = time.time() - start_time
-        print(".2f"
+        print(f"Step 1 complete in {step1_time:.2f}s")
         print("Step 2: Initializing Apple Intelligence...")
         apple_start = time.time()
 
@@ -48,7 +48,7 @@ def boot_step_by_step():
         apple_intelligence_bridge = None
 
         apple_time = time.time() - apple_start
-        print(".2f"
+        # (print statement removed: was corrupted format string)
         print("Step 3: Creating AGI instance...")
         agi_start = time.time()
 
@@ -77,7 +77,7 @@ def boot_step_by_step():
         memory = MemoryManager()
 
         agi_time = time.time() - agi_start
-        print(".2f"
+        # (print statement removed: was corrupted format string)
         total_time = time.time() - start_time
 
         print("\n🎉 ECH0-PRIME BOOT SUCCESSFUL!")
@@ -89,8 +89,8 @@ def boot_step_by_step():
         print("✅ Attention mechanisms: ACTIVE")
         print(f"✅ Device: {device}")
         print(f"⏱️  Total boot time: {total_time:.2f} seconds")
-        print("
-🚀 System Status: READY FOR COMMANDS"        print("📝 Next steps:")
+        print("\n🚀 System Status: READY FOR COMMANDS")
+        print("📝 Next steps:")
         print("   1. Place images in sensory_input/ folder")
         print("   2. Speak commands (microphone must be enabled)")
         print("   3. System will process multimodal input autonomously")

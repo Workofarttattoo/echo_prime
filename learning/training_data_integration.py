@@ -88,7 +88,7 @@ class ECH0TrainingDataManager:
     Provides access to all training samples with advanced filtering and retrieval.
     """
 
-    def __init__(self, ech0_data_path: str = "/Users/noone/ech0/ech0_training_data"):
+    def __init__(self, ech0_data_path: str = os.environ.get("ECH0_TRAINING_DATA", os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "ech0_training_data"))):
         self.ech0_data_path = Path(ech0_data_path)
         self.datasets: Dict[str, List[TrainingSample]] = {}
         self.dataset_stats: Dict[str, DatasetStats] = {}
@@ -495,7 +495,7 @@ class ECH0TrainingOrchestrator:
 
 
 # Convenience functions
-async def initialize_ech0_training_integration(ech0_path: str = "/Users/noone/ech0/ech0_training_data") -> ECH0TrainingDataManager:
+async def initialize_ech0_training_integration(ech0_path: str = os.environ.get("ECH0_TRAINING_DATA", os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "ech0_training_data"))) -> ECH0TrainingDataManager:
     """
     Initialize and load all ECH0 training data into ECH0-PRIME.
     """

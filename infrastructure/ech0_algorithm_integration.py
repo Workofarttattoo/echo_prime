@@ -16,7 +16,7 @@ import inspect
 import json
 
 # Add ech0 path for importing
-ech0_path = Path("/Users/noone/ech0")
+ech0_path = Path(os.environ.get("ECH0_ROOT", os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 sys.path.insert(0, str(ech0_path))
 
 @dataclass
@@ -86,7 +86,7 @@ class ECH0AlgorithmIntegrator:
 
     def __init__(self):
         self.library = AlgorithmLibrary()
-        self.ech0_path = Path("/Users/noone/ech0")
+        self.ech0_path = Path(os.environ.get("ECH0_ROOT", os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
         self.discovered_algorithms = 0
 
         # Algorithm categories we know exist

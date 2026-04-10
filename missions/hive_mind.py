@@ -316,7 +316,7 @@ class HiveMindOrchestrator:
     """
     Main orchestrator for the hive mind collective intelligence system
     """
-    def __init__(self, num_nodes: int = 5, qulab_path: str = "/Users/noone/QuLabInfinite"):
+    def __init__(self, num_nodes: int = 5, qulab_path: str = os.environ.get("QULAB_PATH", "external/QuLabInfinite")):
         self.num_nodes = num_nodes
         self.state = HiveMindState.INITIALIZING
 

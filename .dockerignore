@@ -1,0 +1,82 @@
+# === Git ===
+.git
+.github
+.gitignore
+.gitattributes
+
+# === External vendored libs (large) ===
+external/
+
+# === IDE / Editor ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# === macOS ===
+.DS_Store
+
+# === Python artifacts ===
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.tox/
+
+# === Virtual environments ===
+venv/
+.venv/
+env/
+
+# === Node (dashboard v2 source; built artifacts should be copied separately) ===
+dashboard/v2/node_modules/
+dashboard/v2/.gitignore
+
+# === Runtime data ===
+memory_data/
+checkpoints/
+sensory_input/
+optimization_state/
+audio_input/
+*.log
+logs/
+*.wav
+*.mp3
+*.pt
+
+# === Secrets ===
+.env
+.env.*
+credentials.json
+*.key
+*.pem
+
+# === Misc ===
+*.tmp
+*.temp
+bbb_real/
+.snapshots/
+.agent/
+.claude/
+.devcontainer/
+docs/
+consciousness/invention_data/
+hf_space/
+n3ph1l1m_website/
+n3ph1l1m_backend/
+ech0_prime_prompt-masterworks/
+scripts/benchmarks/
+scripts/capabilities/
+scripts/tools/
+tests/
+Makefile
+README.md
+LICENSE
