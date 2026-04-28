@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echo-prime
+  namespace: bbb-production
+  labels:
+    app: echo-prime
+    tier: agi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: echo-prime
+  template:
+    metadata:
+      labels:
+        app: echo-prime
+    spec:
+      containers:
+      - name: echo-prime
+        image: echo-prime:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+          name: dashboard
+        - containerPort: 7860
+          name: gradio
+        envFrom:
+        - configMapRef:
+            name: echo-prime-config
+        - secretRef:
+            name: echo-prime-secrets
+        resources:
+          requests:
+            cpu: "2"
+            memory: "4Gi"
+          limits:
+            cpu: "8"
+            memory: "16Gi"
+            # nvidia.com/gpu: 1  # Uncomment if AKS has GPU nodes
+        volumeMounts:
+        - name: data-volume
+          mountPath: /app/data
+        - name: memory-volume
+          mountPath: /app/memory_data
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 10
+      volumes:
+      - name: data-volume
+        persistentVolumeClaim:
+          claimName: echo-prime-data-pvc
+      - name: memory-volume
+        persistentVolumeClaim:
+          claimName: echo-prime-memory-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: echo-prime-service
+  namespace: bbb-production
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8000
+    name: http
+  - port: 7860
+    targetPort: 7860
+    name: gradio
+  selector:
+    app: echo-prime
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: echo-prime-data-pvc
+  namespace: bbb-production
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: echo-prime-memory-pvc
+  namespace: bbb-production
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
