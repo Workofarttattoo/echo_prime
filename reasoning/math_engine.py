@@ -57,6 +57,10 @@ class MathematicalReasoningEngine:
             (r'what is (\d+\.?\d*)\s*-\s*(\d+\.?\d*)', lambda m: float(m.group(1)) - float(m.group(2))),
             (r'what is (\d+\.?\d*)\s*\*\s*(\d+\.?\d*)', lambda m: float(m.group(1)) * float(m.group(2))),
             (r'what is (\d+\.?\d*)\s*/\s*(\d+\.?\d*)', lambda m: float(m.group(1)) / float(m.group(2))),
+            (r'calculate (\d+\.?\d*)\s*\+\s*(\d+\.?\d*)', lambda m: float(m.group(1)) + float(m.group(2))),
+            (r'calculate (\d+\.?\d*)\s*-\s*(\d+\.?\d*)', lambda m: float(m.group(1)) - float(m.group(2))),
+            (r'calculate (\d+\.?\d*)\s*\*\s*(\d+\.?\d*)', lambda m: float(m.group(1)) * float(m.group(2))),
+            (r'calculate (\d+\.?\d*)\s*/\s*(\d+\.?\d*)', lambda m: float(m.group(1)) / float(m.group(2))),
             (r'(\d+\.?\d*)\s*\+\s*(\d+\.?\d*)\s*=', lambda m: float(m.group(1)) + float(m.group(2))),
             (r'(\d+\.?\d*)\s*-\s*(\d+\.?\d*)\s*=', lambda m: float(m.group(1)) - float(m.group(2))),
             (r'(\d+\.?\d*)\s*\*\s*(\d+\.?\d*)\s*=', lambda m: float(m.group(1)) * float(m.group(2))),
@@ -109,7 +113,7 @@ class MathematicalReasoningEngine:
         # Generic patterns
         # "has X, gives/eats/uses Y, how many left" -> subtraction
         if any(kw in problem for kw in ['has', 'had', 'were', 'are', 'lay', 'lays']) and \
-           any(kw in problem for kw in ['gives', 'gave', 'loses', 'lost', 'sells', 'sold', 'eats', 'ate', 'uses', 'used']):
+           any(kw in problem for kw in ['gives', 'gave', 'give', 'loses', 'lost', 'lose', 'sells', 'sold', 'sell', 'eats', 'ate', 'eat', 'uses', 'used', 'use']):
             if len(nums) >= 2:
                 # Sum all reductions
                 result = int(nums[0]) - sum(int(n) for n in nums[1:])
