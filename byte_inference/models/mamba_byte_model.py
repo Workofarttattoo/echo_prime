@@ -292,8 +292,10 @@ class MambaBlock(nn.Module):
         # Residual
         output = output + residual
 
-        # Update cache
+        # Update cache with both conv_state and ssm_state
         new_cache = {"conv_state": new_conv_state}
+        if cache is not None and "ssm_state" in cache:
+            new_cache["ssm_state"] = cache["ssm_state"]
 
         return output, new_cache
 

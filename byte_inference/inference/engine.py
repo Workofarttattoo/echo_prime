@@ -179,15 +179,26 @@ class ByteInferenceEngine:
 
         # Use model's generate method
         if hasattr(self.model, 'generate'):
-            return self.model.generate(
-                prompt_bytes=prompt_bytes,
-                max_new_bytes=config.max_new_tokens,
-                temperature=config.temperature,
-                top_k=config.top_k,
-                top_p=config.top_p,
-                repetition_penalty=config.repetition_penalty,
-                device=str(self.device)
-            )
+            # Check if model is Mamba (only accepts subset of params)
+            model_name = self.model.__class__.__name__
+            if 'Mamba' in model_name:
+                return self.model.generate(
+                    prompt_bytes=prompt_bytes,
+                    max_new_bytes=config.max_new_tokens,
+                    temperature=config.temperature,
+                    top_p=config.top_p,
+                    device=str(self.device)
+                )
+            else:
+                return self.model.generate(
+                    prompt_bytes=prompt_bytes,
+                    max_new_bytes=config.max_new_tokens,
+                    temperature=config.temperature,
+                    top_k=config.top_k,
+                    top_p=config.top_p,
+                    repetition_penalty=config.repetition_penalty,
+                    device=str(self.device)
+                )
         else:
             # Fallback manual generation
             return self._generate_manual(prompt_bytes, config)

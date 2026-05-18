@@ -312,8 +312,15 @@ class InventionDataDownloader:
 
         # Save summary
         summary_file = os.path.join(self.base_dir, "download_summary.json")
+
+        # Convert datetime objects to ISO format strings for JSON serialization
+        stats_serializable = {
+            k: v.isoformat() if isinstance(v, datetime) else v
+            for k, v in self.stats.items()
+        }
+
         summary = {
-            'stats': self.stats,
+            'stats': stats_serializable,
             'categories': [
                 {
                     'name': c.name,

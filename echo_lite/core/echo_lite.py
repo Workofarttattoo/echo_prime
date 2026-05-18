@@ -75,6 +75,9 @@ class MinimalCognitiveArchitecture:
         # Prediction error tracking
         self.prediction_errors = []
 
+        # Initialize weight matrix for executive reasoning (reused across calls)
+        self.executive_weights = np.random.randn(64, 128).astype(np.float32) * 0.1
+
         print("🧠 Minimal Cognitive Architecture initialized")
         print(f"   Levels: {config.cognitive_levels}")
         print(f"   Memory footprint: ~{self._estimate_memory_mb():.1f}MB")
@@ -116,9 +119,9 @@ class MinimalCognitiveArchitecture:
         # Simple transformation (no heavy computation)
         # In real implementation, this would be a small neural network
 
-        # Weighted sum with learned parameters (simulated)
+        # Weighted sum with learned parameters
         executive_state = np.tanh(
-            np.dot(sensory_input, np.random.randn(64, 128).astype(np.float32) * 0.1)
+            np.dot(sensory_input, self.executive_weights)
         )
 
         self.state['level_2'] = executive_state
