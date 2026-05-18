@@ -69,7 +69,8 @@ class PersistentMemory:
 
     def _init_database(self):
         """Initialize SQLite database"""
-        self.conn = sqlite3.connect(self.db_path)
+        # check_same_thread=False needed for multi-threaded agent access
+        self.conn = sqlite3.connect(self.db_path, check_same_thread=False)
         self.cursor = self.conn.cursor()
 
         # Create tables
@@ -318,7 +319,11 @@ class PersistentMemory:
         metadata: Optional[Dict[str, Any]] = None
     ):
         """Save current cognitive state"""
-        state_json = json.dumps(state_vector.tolist())
+        # Handle both numpy arrays and lists (from cognitive_cycle)
+        if isinstance(state_vector, np.ndarray):
+            state_json = json.dumps(state_vector.tolist())
+        else:
+            state_json = json.dumps(state_vector)
         metadata_json = json.dumps(metadata) if metadata else None
 
         self.cursor.execute('''
