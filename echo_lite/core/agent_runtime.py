@@ -86,6 +86,9 @@ class AutonomousAgent:
         self.cognitive_thread = None
         self.task_thread = None
 
+        # Thread synchronization for cognitive state access
+        self.cognitive_lock = threading.Lock()
+
         # Performance tracking
         self.cycles_per_second = 0
         self.last_cycle_time = time.time()
@@ -196,8 +199,9 @@ class AutonomousAgent:
                 if not context:
                     context = "Idle, awaiting input"
 
-                # Cognitive cycle
-                result = self.echo.process(context)
+                # Cognitive cycle (protected by lock for thread safety)
+                with self.cognitive_lock:
+                    result = self.echo.process(context)
 
                 # Store cognitive state periodically
                 if self.echo.cycle_count % 100 == 0:
@@ -246,8 +250,9 @@ class AutonomousAgent:
 
                 print(f"\n🎯 Executing: {task.description}")
 
-                # Process task
-                result = self.echo.process(task.description)
+                # Process task (protected by lock for thread safety)
+                with self.cognitive_lock:
+                    result = self.echo.process(task.description)
 
                 # Store task memory
                 self.memory.store_memory(
@@ -331,8 +336,9 @@ class AutonomousAgent:
             metadata={'type': 'interaction'}
         )
 
-        # Process
-        result = self.echo.process(message)
+        # Process (protected by lock for thread safety)
+        with self.cognitive_lock:
+            result = self.echo.process(message)
 
         # Generate response based on cognitive state
         response = self._generate_response(message, result)

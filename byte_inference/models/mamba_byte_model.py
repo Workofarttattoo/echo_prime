@@ -261,14 +261,18 @@ class MambaBlock(nn.Module):
         x = x.transpose(1, 2)  # [batch, d_inner, seq_len]
 
         if cache is not None and "conv_state" in cache:
-            # Use cached conv state
+            # Use cached conv state (pre-conv input from previous step)
             conv_state = cache["conv_state"]
-            x = torch.cat([conv_state, x], dim=2)
-            x = self.conv1d(x)[:, :, -seqlen:]
-            new_conv_state = x[:, :, -(self.d_conv - 1):]
+            x_with_cache = torch.cat([conv_state, x], dim=2)
+            x_conv = self.conv1d(x_with_cache)[:, :, -seqlen:]
+            # Save pre-conv input tail for next iteration
+            new_conv_state = x_with_cache[:, :, -(self.d_conv - 1):]
+            x = x_conv
         else:
-            x = self.conv1d(x)[:, :, :seqlen]
+            # First pass: save input tail before convolution
+            x_conv = self.conv1d(x)[:, :, :seqlen]
             new_conv_state = x[:, :, -(self.d_conv - 1):]
+            x = x_conv
 
         x = x.transpose(1, 2)  # [batch, seq_len, d_inner]
         x = F.silu(x)

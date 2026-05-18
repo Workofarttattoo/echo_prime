@@ -302,7 +302,10 @@ class InventionDataDownloader:
         print(f"Total failures: {self.stats['total_failed']:,}")
         print(f"Categories completed: {self.stats['categories_complete']}/{len(self.categories)}")
         print(f"Duration: {duration:.1f} seconds ({duration/60:.1f} minutes)")
-        print(f"Average speed: {self.stats['total_downloaded']/duration:.1f} papers/second")
+        if duration > 0:
+            print(f"Average speed: {self.stats['total_downloaded']/duration:.1f} papers/second")
+        else:
+            print(f"Average speed: N/A (instant completion)")
         print("\nCategory Breakdown:")
         for category in sorted(self.categories, key=lambda c: c.priority, reverse=True):
             status = "✅" if category.downloaded_count >= category.target_count * 0.9 else "🔄"
