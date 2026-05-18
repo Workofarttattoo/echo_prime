@@ -209,9 +209,8 @@ class PersistentMemory:
 
         self.conn.commit()
 
-        # Update identity
-        self.identity['total_memories'] = self.count_memories()
-        self._save_identity(self.identity)
+        # Note: Identity total_memories is updated periodically in agent_runtime,
+        # not on every write to avoid unnecessary I/O overhead
 
         return self.cursor.lastrowid
 

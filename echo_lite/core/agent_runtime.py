@@ -214,6 +214,8 @@ class AutonomousAgent:
                 # Update identity
                 self.memory.identity['total_cycles'] = self.echo.cycle_count
                 if self.echo.cycle_count % 1000 == 0:
+                    # Periodic update includes memory count (avoids overhead on every write)
+                    self.memory.identity['total_memories'] = self.memory.count_memories()
                     self.memory.update_identity(self.memory.identity)
 
                 # Calculate performance

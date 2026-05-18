@@ -248,6 +248,7 @@ class ByteInferenceEngine:
 
         return generated
 
+    @torch.inference_mode()
     def _generate_stream(
         self,
         prompt_bytes: List[int],
