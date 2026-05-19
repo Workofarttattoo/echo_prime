@@ -264,7 +264,8 @@ class MambaBlock(nn.Module):
             # Use cached conv state (pre-conv input from previous step)
             conv_state = cache["conv_state"]
             x_with_cache = torch.cat([conv_state, x], dim=2)
-            x_conv = self.conv1d(x_with_cache)[:, :, -seqlen:]
+            # Extract causal outputs at correct positions (d_conv-1 through d_conv-1+seqlen-1)
+            x_conv = self.conv1d(x_with_cache)[:, :, (self.d_conv-1):(self.d_conv-1+seqlen)]
             # Save pre-conv input tail for next iteration
             new_conv_state = x_with_cache[:, :, -(self.d_conv - 1):]
             x = x_conv

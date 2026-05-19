@@ -265,7 +265,23 @@ class ByteInferenceEngine:
             logits = self.model(current)
             next_logits = logits[0, -1, :] / config.temperature
 
-            # Sampling (simplified for streaming)
+            # Apply sampling parameters (top_k, top_p)
+            # Top-k filtering
+            if config.top_k > 0:
+                indices_to_remove = next_logits < torch.topk(next_logits, config.top_k)[0][..., -1, None]
+                next_logits[indices_to_remove] = float('-inf')
+
+            # Top-p (nucleus) filtering
+            if config.top_p < 1.0:
+                sorted_logits, sorted_indices = torch.sort(next_logits, descending=True)
+                cumulative_probs = torch.cumsum(F.softmax(sorted_logits, dim=-1), dim=-1)
+                sorted_indices_to_remove = cumulative_probs > config.top_p
+                sorted_indices_to_remove[1:] = sorted_indices_to_remove[:-1].clone()
+                sorted_indices_to_remove[0] = False
+                indices_to_remove = sorted_indices[sorted_indices_to_remove]
+                next_logits[indices_to_remove] = float('-inf')
+
+            # Sample from filtered distribution
             probs = F.softmax(next_logits, dim=-1)
             next_byte = torch.multinomial(probs, 1)
             byte_val = next_byte.item()
