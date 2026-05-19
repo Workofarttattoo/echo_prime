@@ -205,7 +205,8 @@ class Trainer:
         )
 
         # Learning rate scheduler
-        total_steps = len(self.train_loader) * config.num_epochs
+        # Account for gradient accumulation: scheduler steps only after accumulated gradients
+        total_steps = (len(self.train_loader) * config.num_epochs) // config.gradient_accumulation_steps
         self.scheduler = optim.lr_scheduler.OneCycleLR(
             self.optimizer,
             max_lr=config.learning_rate,
