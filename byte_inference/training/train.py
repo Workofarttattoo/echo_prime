@@ -340,6 +340,10 @@ class Trainer:
                 if self.global_step % self.config.save_every_n_steps == 0:
                     self.save_checkpoint()
 
+        # Clear any leftover gradients at epoch end
+        # (prevents leakage when batch count isn't divisible by gradient_accumulation_steps)
+        self.optimizer.zero_grad()
+
     def _compute_loss(self, logits, targets):
         """Compute cross-entropy loss"""
         # logits: [batch, seq_len, 256]
