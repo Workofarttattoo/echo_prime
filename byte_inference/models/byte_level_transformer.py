@@ -259,7 +259,8 @@ class TransformerEncoderLayer(nn.Module):
         self,
         src: torch.Tensor,
         src_mask: Optional[torch.Tensor] = None,
-        src_key_padding_mask: Optional[torch.Tensor] = None
+        src_key_padding_mask: Optional[torch.Tensor] = None,
+        is_causal: Optional[bool] = None  # PyTorch 2.0+ compatibility
     ) -> torch.Tensor:
         """Forward pass with pre-norm architecture"""
 
