@@ -13,6 +13,7 @@ Features:
 import sqlite3
 import json
 import time
+import threading
 from typing import Dict, Any, List, Optional
 from pathlib import Path
 from dataclasses import dataclass, asdict
@@ -57,6 +58,9 @@ class PersistentMemory:
         self.conn = None
         self.cursor = None
 
+        # Thread safety lock for all database operations
+        self._db_lock = threading.Lock()
+
         # Initialize database
         self._init_database()
 
@@ -71,10 +75,11 @@ class PersistentMemory:
         """Initialize SQLite database"""
         # check_same_thread=False needed for multi-threaded agent access
         self.conn = sqlite3.connect(self.db_path, check_same_thread=False)
-        self.cursor = self.conn.cursor()
 
-        # Create tables
-        self.cursor.execute('''
+        # Note: Don't store a shared cursor - create per-operation for thread safety
+        # Create tables using a local cursor
+        cursor = self.conn.cursor()
+        cursor.execute('''
             CREATE TABLE IF NOT EXISTS memories (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 timestamp REAL NOT NULL,
@@ -191,28 +196,29 @@ class PersistentMemory:
 
         data = entry.to_dict()
 
-        self.cursor.execute('''
-            INSERT INTO memories (
-                timestamp, memory_type, content, embedding,
-                importance, access_count, last_accessed, metadata
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (
-            data['timestamp'],
-            data['memory_type'],
-            data['content'],
-            data['embedding'],
-            data['importance'],
-            0,
-            None,
-            data['metadata']
-        ))
+        with self._db_lock:
+            self.cursor.execute('''
+                INSERT INTO memories (
+                    timestamp, memory_type, content, embedding,
+                    importance, access_count, last_accessed, metadata
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                data['timestamp'],
+                data['memory_type'],
+                data['content'],
+                data['embedding'],
+                data['importance'],
+                0,
+                None,
+                data['metadata']
+            ))
 
-        self.conn.commit()
+            self.conn.commit()
 
-        # Note: Identity total_memories is updated periodically in agent_runtime,
-        # not on every write to avoid unnecessary I/O overhead
+            # Note: Identity total_memories is updated periodically in agent_runtime,
+            # not on every write to avoid unnecessary I/O overhead
 
-        return self.cursor.lastrowid
+            return self.cursor.lastrowid
 
     def recall_memories(
         self,
@@ -246,33 +252,34 @@ class PersistentMemory:
         query += ' ORDER BY importance DESC, timestamp DESC LIMIT ?'
         params.append(limit)
 
-        self.cursor.execute(query, params)
-        rows = self.cursor.fetchall()
+        with self._db_lock:
+            self.cursor.execute(query, params)
+            rows = self.cursor.fetchall()
 
-        memories = []
-        for row in rows:
-            memory = {
-                'id': row[0],
-                'timestamp': row[1],
-                'memory_type': row[2],
-                'content': row[3],
-                'importance': row[4],
-                'access_count': row[5],
-                'last_accessed': row[6],
-                'metadata': json.loads(row[7]) if row[7] else None
-            }
-            memories.append(memory)
+            memories = []
+            for row in rows:
+                memory = {
+                    'id': row[0],
+                    'timestamp': row[1],
+                    'memory_type': row[2],
+                    'content': row[3],
+                    'importance': row[4],
+                    'access_count': row[5],
+                    'last_accessed': row[6],
+                    'metadata': json.loads(row[7]) if row[7] else None
+                }
+                memories.append(memory)
 
-            # Update access count
-            self.cursor.execute('''
-                UPDATE memories
-                SET access_count = access_count + 1,
-                    last_accessed = ?
-                WHERE id = ?
-            ''', (time.time(), row[0]))
+                # Update access count
+                self.cursor.execute('''
+                    UPDATE memories
+                    SET access_count = access_count + 1,
+                        last_accessed = ?
+                    WHERE id = ?
+                ''', (time.time(), row[0]))
 
-        self.conn.commit()
-        return memories
+            self.conn.commit()
+            return memories
 
     def search_memories(self, query: str, limit: int = 5) -> List[Dict[str, Any]]:
         """
@@ -325,12 +332,13 @@ class PersistentMemory:
             state_json = json.dumps(state_vector)
         metadata_json = json.dumps(metadata) if metadata else None
 
-        self.cursor.execute('''
-            INSERT INTO cognitive_state (timestamp, state_vector, cycle_count, metadata)
-            VALUES (?, ?, ?, ?)
-        ''', (time.time(), state_json, cycle_count, metadata_json))
+        with self._db_lock:
+            self.cursor.execute('''
+                INSERT INTO cognitive_state (timestamp, state_vector, cycle_count, metadata)
+                VALUES (?, ?, ?, ?)
+            ''', (time.time(), state_json, cycle_count, metadata_json))
 
-        self.conn.commit()
+            self.conn.commit()
 
     def load_latest_cognitive_state(self) -> Optional[Dict[str, Any]]:
         """Load most recent cognitive state"""
@@ -363,15 +371,16 @@ class PersistentMemory:
 
     def count_memories(self, memory_type: Optional[str] = None) -> int:
         """Count total memories"""
-        if memory_type:
-            self.cursor.execute(
-                'SELECT COUNT(*) FROM memories WHERE memory_type = ?',
-                (memory_type,)
-            )
-        else:
-            self.cursor.execute('SELECT COUNT(*) FROM memories')
+        with self._db_lock:
+            if memory_type:
+                self.cursor.execute(
+                    'SELECT COUNT(*) FROM memories WHERE memory_type = ?',
+                    (memory_type,)
+                )
+            else:
+                self.cursor.execute('SELECT COUNT(*) FROM memories')
 
-        return self.cursor.fetchone()[0]
+            return self.cursor.fetchone()[0]
 
     def consolidate_memories(self, days_old: int = 7):
         """
