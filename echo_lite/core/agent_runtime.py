@@ -81,6 +81,7 @@ class AutonomousAgent:
         # Task queue
         self.task_queue = queue.PriorityQueue()
         self.current_task = None
+        self.task_counter = 0  # Counter for queue tiebreaking
 
         # Background threads
         self.cognitive_thread = None
@@ -242,7 +243,7 @@ class AutonomousAgent:
             try:
                 # Get task (blocking with timeout)
                 try:
-                    priority, task = self.task_queue.get(timeout=1.0)
+                    priority, counter, task = self.task_queue.get(timeout=1.0)
                 except queue.Empty:
                     continue
 
@@ -298,7 +299,9 @@ class AutonomousAgent:
         )
 
         # Higher priority = lower queue number (inverted)
-        self.task_queue.put((10 - priority, task))
+        # Use counter as tiebreaker to avoid comparing Task objects
+        self.task_counter += 1
+        self.task_queue.put((10 - priority, self.task_counter, task))
 
         print(f"📝 Task queued: {description} (priority {priority})")
 
