@@ -76,10 +76,10 @@ class PersistentMemory:
         # check_same_thread=False needed for multi-threaded agent access
         self.conn = sqlite3.connect(self.db_path, check_same_thread=False)
 
-        # Note: Don't store a shared cursor - create per-operation for thread safety
-        # Create tables using a local cursor
-        cursor = self.conn.cursor()
-        cursor.execute('''
+        # Create shared cursor (protected by _db_lock during use)
+        self.cursor = self.conn.cursor()
+
+        self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS memories (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 timestamp REAL NOT NULL,
@@ -156,13 +156,14 @@ class PersistentMemory:
 
     def _save_identity(self, identity: Dict[str, Any]):
         """Save identity to database"""
-        for key, value in identity.items():
-            value_str = json.dumps(value) if not isinstance(value, str) else value
-            self.cursor.execute('''
-                INSERT OR REPLACE INTO identity (key, value, updated_at)
-                VALUES (?, ?, CURRENT_TIMESTAMP)
-            ''', (key, value_str))
-        self.conn.commit()
+        with self._db_lock:
+            for key, value in identity.items():
+                value_str = json.dumps(value) if not isinstance(value, str) else value
+                self.cursor.execute('''
+                    INSERT OR REPLACE INTO identity (key, value, updated_at)
+                    VALUES (?, ?, CURRENT_TIMESTAMP)
+                ''', (key, value_str))
+            self.conn.commit()
 
     def store_memory(
         self,
@@ -292,31 +293,32 @@ class PersistentMemory:
         Returns:
             List of matching memories
         """
-        self.cursor.execute('''
-            SELECT id, timestamp, memory_type, content, importance,
-                   access_count, metadata
-            FROM memories
-            WHERE content LIKE ?
-            ORDER BY importance DESC, timestamp DESC
-            LIMIT ?
-        ''', (f'%{query}%', limit))
+        with self._db_lock:
+            self.cursor.execute('''
+                SELECT id, timestamp, memory_type, content, importance,
+                       access_count, metadata
+                FROM memories
+                WHERE content LIKE ?
+                ORDER BY importance DESC, timestamp DESC
+                LIMIT ?
+            ''', (f'%{query}%', limit))
 
-        rows = self.cursor.fetchall()
+            rows = self.cursor.fetchall()
 
-        memories = []
-        for row in rows:
-            memory = {
-                'id': row[0],
-                'timestamp': row[1],
-                'memory_type': row[2],
-                'content': row[3],
-                'importance': row[4],
-                'access_count': row[5],
-                'metadata': json.loads(row[6]) if row[6] else None
-            }
-            memories.append(memory)
+            memories = []
+            for row in rows:
+                memory = {
+                    'id': row[0],
+                    'timestamp': row[1],
+                    'memory_type': row[2],
+                    'content': row[3],
+                    'importance': row[4],
+                    'access_count': row[5],
+                    'metadata': json.loads(row[6]) if row[6] else None
+                }
+                memories.append(memory)
 
-        return memories
+            return memories
 
     def save_cognitive_state(
         self,
@@ -342,23 +344,24 @@ class PersistentMemory:
 
     def load_latest_cognitive_state(self) -> Optional[Dict[str, Any]]:
         """Load most recent cognitive state"""
-        self.cursor.execute('''
-            SELECT timestamp, state_vector, cycle_count, metadata
-            FROM cognitive_state
-            ORDER BY timestamp DESC
-            LIMIT 1
-        ''')
+        with self._db_lock:
+            self.cursor.execute('''
+                SELECT timestamp, state_vector, cycle_count, metadata
+                FROM cognitive_state
+                ORDER BY timestamp DESC
+                LIMIT 1
+            ''')
 
-        row = self.cursor.fetchone()
-        if not row:
-            return None
+            row = self.cursor.fetchone()
+            if not row:
+                return None
 
-        return {
-            'timestamp': row[0],
-            'state_vector': np.array(json.loads(row[1])),
-            'cycle_count': row[2],
-            'metadata': json.loads(row[3]) if row[3] else None
-        }
+            return {
+                'timestamp': row[0],
+                'state_vector': np.array(json.loads(row[1])),
+                'cycle_count': row[2],
+                'metadata': json.loads(row[3]) if row[3] else None
+            }
 
     def update_identity(self, updates: Dict[str, Any]):
         """Update identity attributes"""
@@ -390,19 +393,20 @@ class PersistentMemory:
         """
         cutoff_time = time.time() - (days_old * 24 * 3600)
 
-        self.cursor.execute('''
-            UPDATE memories
-            SET importance = importance * 0.9
-            WHERE timestamp < ?
-            AND access_count < 3
-            AND memory_type = 'episodic'
-        ''', (cutoff_time,))
+        with self._db_lock:
+            self.cursor.execute('''
+                UPDATE memories
+                SET importance = importance * 0.9
+                WHERE timestamp < ?
+                AND access_count < 3
+                AND memory_type = 'episodic'
+            ''', (cutoff_time,))
 
-        affected = self.cursor.rowcount
-        self.conn.commit()
+            affected = self.cursor.rowcount
+            self.conn.commit()
 
-        print(f"🧹 Consolidated {affected} old memories")
-        return affected
+            print(f"🧹 Consolidated {affected} old memories")
+            return affected
 
     def get_statistics(self) -> Dict[str, Any]:
         """Get memory statistics"""
@@ -413,33 +417,34 @@ class PersistentMemory:
             'identity_memories': self.count_memories('identity')
         }
 
-        # Most accessed
-        self.cursor.execute('''
-            SELECT content, access_count
-            FROM memories
-            ORDER BY access_count DESC
-            LIMIT 1
-        ''')
-        row = self.cursor.fetchone()
-        if row:
-            stats['most_accessed'] = {
-                'content': row[0][:50] + '...',
-                'count': row[1]
-            }
+        # Most accessed and oldest memory queries
+        with self._db_lock:
+            self.cursor.execute('''
+                SELECT content, access_count
+                FROM memories
+                ORDER BY access_count DESC
+                LIMIT 1
+            ''')
+            row = self.cursor.fetchone()
+            if row:
+                stats['most_accessed'] = {
+                    'content': row[0][:50] + '...',
+                    'count': row[1]
+                }
 
-        # Oldest memory
-        self.cursor.execute('''
-            SELECT content, timestamp
-            FROM memories
-            ORDER BY timestamp ASC
-            LIMIT 1
-        ''')
-        row = self.cursor.fetchone()
-        if row:
-            stats['oldest_memory'] = {
-                'content': row[0][:50] + '...',
-                'age_hours': (time.time() - row[1]) / 3600
-            }
+            # Oldest memory
+            self.cursor.execute('''
+                SELECT content, timestamp
+                FROM memories
+                ORDER BY timestamp ASC
+                LIMIT 1
+            ''')
+            row = self.cursor.fetchone()
+            if row:
+                stats['oldest_memory'] = {
+                    'content': row[0][:50] + '...',
+                    'age_hours': (time.time() - row[1]) / 3600
+                }
 
         return stats
 
