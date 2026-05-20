@@ -1,0 +1,12 @@
+# Echo Lite - Minimal Requirements for Raspberry Pi 5
+# Optimized for ARM64, low memory, CPU-only
+
+# Core dependencies
+numpy>=1.24.0,<2.0.0
+
+# No heavy dependencies!
+# No torch, no transformers, no CUDA
+
+# Optional: For enhanced features
+# sentence-transformers-lite  # If available
+# onnxruntime  # For model inference
