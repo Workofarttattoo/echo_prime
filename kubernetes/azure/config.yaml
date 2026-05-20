@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: echo-prime-config
+  namespace: bbb-production
+data:
+  ECH0_PHASE: "2"
+  ECH0_LIGHTWEIGHT: "0"
+  ECH0_MODE: "orchestrator"
+  ECH0_DIM_PROFILE: "balanced"
+  LLM_PROVIDER: "ollama"  # Should point to external LLM or local sidecar
+  OLLAMA_BASE_URL: "http://ollama-service:11434"
+  OLLAMA_MODEL: "llama3.2"
+  DASHBOARD_PORT: "8000"
+  GRADIO_PORT: "7860"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: echo-prime-secrets
+  namespace: bbb-production
+type: Opaque
+stringData:
+  # Base64 encoded secrets should be added here
+  ECH0_LICENSE_SECRET: "fill-this-in"
+  OPENAI_API_KEY: ""
+  ANTHROPIC_API_KEY: ""

@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echo-prime-redis
+  namespace: bbb-production
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: echo-prime-redis
+  template:
+    metadata:
+      labels:
+        app: echo-prime-redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:7-alpine
+        ports:
+        - containerPort: 6379
+        volumeMounts:
+        - name: redis-data
+          mountPath: /data
+      volumes:
+      - name: redis-data
+        persistentVolumeClaim:
+          claimName: echo-prime-redis-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: echo-prime-redis
+  namespace: bbb-production
+spec:
+  ports:
+  - port: 6379
+  selector:
+    app: echo-prime-redis
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: echo-prime-redis-pvc
+  namespace: bbb-production
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
