@@ -8,7 +8,7 @@ You have successfully scaffolded a complete **Cognitive-Synthetic Architecture (
 To see the entire system working together (from safety checks to free-energy minimization and meta-learning), run the master script:
 
 ```bash
-cd /Users/noone/.gemini/antigravity/scratch/echo_prime
+cd $HOME/.gemini/antigravity/scratch/echo_prime
 ./venv/bin/python3 main_orchestrator.py
 ```
 

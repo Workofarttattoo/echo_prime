@@ -5,7 +5,7 @@
 # ----------------------------------------------------------------------
 
 # Activate the virtual‑env that Echo Prime uses
-source /Users/noone/echo_prime/venv/bin/activate
+source $HOME/echo_prime/venv/bin/activate
 
 # ----------------------------------------------------------------------
 # 1️⃣ Run the upgrade routine
@@ -15,17 +15,17 @@ source /Users/noone/echo_prime/venv/bin/activate
 # orchestrator with an `--upgrade` flag – adjust as needed.
 #
 # Example:
-#   python /Users/noone/echo_prime/gradual_scaling_orchestrator.py --upgrade
+#   python $HOME/echo_prime/gradual_scaling_orchestrator.py --upgrade
 # ----------------------------------------------------------------------
-/Users/noone/echo_prime/venv_scaling/bin/python /Users/noone/echo_prime/bbb_real/gradual_scaling_orchestrator.py
+$HOME/echo_prime/venv_scaling/bin/python $HOME/echo_prime/bbb_real/gradual_scaling_orchestrator.py
 # Run autonomous improvement loops
-python /Users/noone/echo_prime/missions/recursive_improvement.py || true
-python /Users/noone/echo_prime/demo_continuous_self_improvement.py || true
+python $HOME/echo_prime/missions/recursive_improvement.py || true
+python $HOME/echo_prime/demo_continuous_self_improvement.py || true
 
 # ----------------------------------------------------------------------
 # 2️⃣ Prune old / oversized log files
 # ----------------------------------------------------------------------
-LOGDIR="/Users/noone/echo_prime/logs"
+LOGDIR="$HOME/echo_prime/logs"
 
 # • Delete log files older than 7 days (you can change the number)
 find "$LOGDIR" -type f -mtime +7 -delete

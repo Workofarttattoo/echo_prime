@@ -586,10 +586,11 @@ for bottleneck in bottlenecks:
 ### Initializing the Hive Mind
 
 ```python
+import os
 from missions.hive_mind import HiveMindOrchestrator
 
 # Initialize a hive mind with 5 specialized nodes
-hive = HiveMindOrchestrator(num_nodes=5, qulab_path="/Users/noone/QuLabInfinite")
+hive = HiveMindOrchestrator(num_nodes=5, qulab_path=f"{os.environ.get('HOME')}/QuLabInfinite")
 
 print(f"Hive initialized with {len(hive.nodes)} nodes")
 print(f"QuLabInfinite connected: {hive.qulab_bridge.available}")
